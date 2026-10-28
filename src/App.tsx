@@ -9,10 +9,12 @@ import { useScanner } from '@/components/scan/useScanner';
 import { SettingsSheet } from '@/components/settings/SettingsSheet';
 import { useToast } from '@/components/ui/Toast';
 import { useInventory } from '@/hooks/useInventory';
+import { useDeleteWithUndo } from '@/hooks/useDeleteWithUndo';
 import { LocationType, type NewEntry } from '@/types';
 
 export default function App() {
   const inventory = useInventory();
+  const deleteEntries = useDeleteWithUndo(inventory);
   const notify = useToast();
   const [tab, setTab] = useState<Tab>('count');
   const [location, setLocation] = useState<LocationType>(LocationType.CELLAR);
@@ -64,13 +66,13 @@ export default function App() {
         )}
 
         {tab === 'count' ? (
-          <CountScreen entries={inventory.entries} location={location} onLocation={setLocation} onAdd={inventory.add} />
+          <CountScreen entries={inventory.entries} location={location} onLocation={setLocation} onAdd={inventory.add} onDelete={deleteEntries} />
         ) : (
           <ReportScreen
             entries={inventory.entries}
             canClear={inventory.status === 'connected'}
             onUpdate={inventory.update}
-            onRemove={inventory.remove}
+            onDelete={deleteEntries}
             onClearAll={inventory.clearAll}
           />
         )}

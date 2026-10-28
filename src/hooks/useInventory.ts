@@ -186,6 +186,32 @@ export function useInventory() {
     [commit, sync],
   );
 
+  /** Deletes several records with a single sync. */
+  const removeMany = useCallback(
+    (ids: string[]) => {
+      if (ids.length === 0) return;
+      ids.forEach(id => localStore.markDelete(id));
+      const gone = new Set(ids);
+      commit(prev => prev.filter(e => !gone.has(e.id)));
+      sync();
+    },
+    [commit, sync],
+  );
+
+  /** Puts back records that were just deleted (Undo). Same ids, so it is idempotent in the cloud. */
+  const restore = useCallback(
+    (items: InventoryEntry[]) => {
+      if (items.length === 0) return;
+      localStore.markUpsert(items.map(e => e.id));
+      commit(prev => {
+        const have = new Set(prev.map(e => e.id));
+        return [...items.filter(e => !have.has(e.id)), ...prev].sort(byNewest);
+      });
+      sync();
+    },
+    [commit, sync],
+  );
+
   /** Wipes the whole inventory. Requires a live connection. */
   const clearAll = useCallback(async () => {
     if (status !== 'connected') throw new Error('You need a connection to clear the inventory.');
@@ -208,6 +234,8 @@ export function useInventory() {
     add,
     update,
     remove,
+    removeMany,
+    restore,
     clearAll,
   };
 }
