@@ -5,7 +5,10 @@ import { shortCategory } from '@/data/catalog';
 import { Button } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
+import { SwipeRow } from '@/components/ui/SwipeRow';
 import { EntrySheet } from './EntrySheet';
+import { canonicalName } from '@/data/catalog';
+import type { DeleteEntries } from '@/hooks/useDeleteWithUndo';
 import type { InventoryEntry, NewEntry, ReportRow } from '@/types';
 import { cx, formatMoney, formatQty, normalizeText } from '@/lib/format';
 
@@ -15,11 +18,11 @@ interface Props {
   entries: InventoryEntry[];
   canClear: boolean;
   onUpdate: (id: string, changes: Partial<NewEntry>) => void;
-  onRemove: (id: string) => void;
+  onDelete: DeleteEntries;
   onClearAll: () => Promise<void>;
 }
 
-export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll }: Props) {
+export function ReportScreen({ entries, canClear, onUpdate, onDelete, onClearAll }: Props) {
   const notify = useToast();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
@@ -163,6 +166,15 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
             <ul className="card divide-y divide-line/60 overflow-hidden">
               {list.map(r => (
                 <li key={r.name}>
+                  <SwipeRow
+                    label={r.name}
+                    onDelete={() =>
+                      onDelete(
+                        entries.filter(e => canonicalName(e.itemName) === r.name),
+                        r.name,
+                      )
+                    }
+                  >
                   <button
                     onClick={() => setSelected(r.name)}
                     className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-field focus-visible:bg-field focus-visible:outline-none"
@@ -181,6 +193,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
                     </div>
                     <ChevronRight size={18} className="shrink-0 text-muted" />
                   </button>
+                  </SwipeRow>
                 </li>
               ))}
             </ul>
@@ -195,7 +208,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
         </Button>
       </div>
 
-      <EntrySheet row={selectedRow} entries={entries} onClose={closeSheet} onUpdate={onUpdate} onRemove={onRemove} />
+      <EntrySheet row={selectedRow} entries={entries} onClose={closeSheet} onUpdate={onUpdate} onDelete={onDelete} />
 
       <Sheet
         open={confirmClear}

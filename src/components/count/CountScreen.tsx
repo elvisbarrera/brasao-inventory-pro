@@ -4,6 +4,8 @@ import { ACTIVE_CATALOG, canonicalName, isLiquorCategory, shortCategory } from '
 import { LocationToggle } from '@/components/ui/LocationToggle';
 import { CountSheet, type CountTarget } from './CountSheet';
 import { useToast } from '@/components/ui/Toast';
+import { SwipeRow } from '@/components/ui/SwipeRow';
+import type { DeleteEntries } from '@/hooks/useDeleteWithUndo';
 import { LocationType, type InventoryEntry, type NewEntry } from '@/types';
 import { cx, formatQty, normalizeText } from '@/lib/format';
 
@@ -12,9 +14,10 @@ interface Props {
   location: LocationType;
   onLocation: (l: LocationType) => void;
   onAdd: (items: NewEntry[]) => void;
+  onDelete: DeleteEntries;
 }
 
-export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
+export function CountScreen({ entries, location, onLocation, onAdd, onDelete }: Props) {
   const notify = useToast();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
@@ -132,8 +135,7 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
       <ul className="card divide-y divide-line/60 overflow-hidden md:grid md:grid-cols-2 md:divide-y-0">
         {results.map(item => {
           const n = counted.get(item.name) ?? 0;
-          return (
-            <li key={item.id} className="md:border-b md:border-line/60 md:odd:border-r">
+          const row = (
               <button
                 onClick={() => open(item.name, item.category, item.price)}
                 className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-field focus-visible:bg-field focus-visible:outline-none active:bg-field"
@@ -153,6 +155,24 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
                   <Plus size={18} className="shrink-0 text-muted" />
                 )}
               </button>
+          );
+          return (
+            <li key={item.id} className="md:border-b md:border-line/60 md:odd:border-r">
+              {n > 0 ? (
+                <SwipeRow
+                  label={item.name}
+                  onDelete={() =>
+                    onDelete(
+                      entries.filter(e => e.location === location && canonicalName(e.itemName) === item.name),
+                      item.name,
+                    )
+                  }
+                >
+                  {row}
+                </SwipeRow>
+              ) : (
+                row
+              )}
             </li>
           );
         })}

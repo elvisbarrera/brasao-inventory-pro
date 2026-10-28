@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button';
 import { LocationToggle, locationLabel } from '@/components/ui/LocationToggle';
 import { useToast } from '@/components/ui/Toast';
 import { canonicalName } from '@/data/catalog';
+import { SwipeRow } from '@/components/ui/SwipeRow';
+import type { DeleteEntries } from '@/hooks/useDeleteWithUndo';
 import { LocationType, type InventoryEntry, type NewEntry, type ReportRow } from '@/types';
 import { cx, formatMoney, formatQty, formatRelative } from '@/lib/format';
 
@@ -13,17 +15,17 @@ interface Props {
   entries: InventoryEntry[];
   onClose: () => void;
   onUpdate: (id: string, changes: Partial<NewEntry>) => void;
-  onRemove: (id: string) => void;
+  onDelete: DeleteEntries;
 }
 
 function EntryRow({
   entry,
   onUpdate,
-  onRemove,
+  onDelete,
 }: {
   entry: InventoryEntry;
   onUpdate: Props['onUpdate'];
-  onRemove: Props['onRemove'];
+  onDelete: Props['onDelete'];
 }) {
   const notify = useToast();
   const [editing, setEditing] = useState(false);
@@ -71,7 +73,9 @@ function EntryRow({
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-2xl border border-line bg-field/40 py-2.5 pr-2 pl-4">
+    <li className="overflow-hidden rounded-2xl border border-line">
+    <SwipeRow label={`${formatQty(entry.qty)} in ${locationLabel(entry.location)}`} onDelete={() => onDelete([entry], 'record')}>
+    <div className="flex items-center gap-3 py-2.5 pr-2 pl-4">
       <span className="num w-14 text-2xl font-semibold text-fg">{formatQty(entry.qty)}</span>
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-bold text-fg">{locationLabel(entry.location)}</p>
@@ -84,20 +88,19 @@ function EntryRow({
         Edit
       </button>
       <button
-        onClick={() => {
-          onRemove(entry.id);
-          notify('Record deleted');
-        }}
+        onClick={() => onDelete([entry], 'record')}
         aria-label="Delete record"
         className="rounded-xl p-2.5 text-muted hover:bg-danger/10 hover:text-danger"
       >
         <Trash2 size={18} />
       </button>
+    </div>
+    </SwipeRow>
     </li>
   );
 }
 
-export function EntrySheet({ row, entries, onClose, onUpdate, onRemove }: Props) {
+export function EntrySheet({ row, entries, onClose, onUpdate, onDelete }: Props) {
   const list = row ? entries.filter(e => canonicalName(e.itemName) === row.name).sort((a, b) => b.timestamp - a.timestamp) : [];
 
   // Close automatically when the last entry is deleted
@@ -128,7 +131,7 @@ export function EntrySheet({ row, entries, onClose, onUpdate, onRemove }: Props)
           </dl>
           <ul className="space-y-2">
             {list.map(e => (
-              <EntryRow key={e.id} entry={e} onUpdate={onUpdate} onRemove={onRemove} />
+              <EntryRow key={e.id} entry={e} onUpdate={onUpdate} onDelete={onDelete} />
             ))}
           </ul>
         </div>
