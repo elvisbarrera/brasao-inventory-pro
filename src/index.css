@@ -7,11 +7,13 @@
 @import "@fontsource/lato/400.css";
 @import "@fontsource/lato/700.css";
 @import "@fontsource/lato/900.css";
+@import "@fontsource-variable/source-sans-3/wght.css";
 
 /* Brasão brand tokens (match brasaousa.com) */
 @theme {
   --font-display: "Playfair Display", Georgia, serif;
   --font-sans: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-num: "Source Sans 3 Variable", "Lato", sans-serif; /* numbers: real 500/600 weights */
 
   --color-page: #f4f0ee;       /* site background */
   --color-surface: #fffdf9;    /* cards, sheets */
@@ -64,7 +66,7 @@
   }
   /* Numbers: Lato with lining, tabular figures (easy to read and align) */
   .num {
-    font-family: var(--font-sans);
+    font-family: var(--font-num);
     font-style: normal;
     font-variant-numeric: lining-nums tabular-nums;
     letter-spacing: -0.02em;
