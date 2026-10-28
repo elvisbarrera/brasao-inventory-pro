@@ -143,7 +143,7 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 text-amber-300">
             <Sparkles size={14} />
-            <h3 className="font-bold text-xs sm:text-sm font-cinzel tracking-wider uppercase">
+            <h3 className="font-playfair font-bold text-sm sm:text-base tracking-wide text-amber-200">
               Escaneo OCR con IA
             </h3>
           </div>
@@ -185,14 +185,14 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
                   setSelectedCategory('All');
                   setQty('');
                 }}
-                className={`flex-1 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                className={`flex-1 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all font-montserrat ${
                   location === LocationType.CELLAR 
                     ? 'bg-white text-slate-900 shadow-sm border border-slate-200/40' 
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <Wine size={16} className={location === LocationType.CELLAR ? 'text-amber-600' : 'text-slate-400'} />
-                <span>Cellar (Vinos & Champagne)</span>
+                <span>Cellar (Vinos)</span>
               </button>
 
               <button
@@ -203,22 +203,24 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
                   setSelectedCategory('All');
                   setQty('');
                 }}
-                className={`flex-1 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                className={`flex-1 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all font-montserrat ${
                   location === LocationType.BAR 
                     ? 'bg-white text-slate-900 shadow-sm border border-slate-200/40' 
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <Beer size={16} className={location === LocationType.BAR ? 'text-amber-600' : 'text-slate-400'} />
-                <span>Bar (Licores & Destilados)</span>
+                <span>Bar (Licores)</span>
               </button>
             </div>
 
             {/* Search Input */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
-                <span>{location === LocationType.CELLAR ? 'Catálogo de Vinos' : 'Catálogo de Licores'}</span>
-                <span className="text-[10px] text-slate-400 lowercase font-medium">({filteredItems.length} opciones)</span>
+              <div className="flex items-center justify-between">
+                <span className="font-playfair font-bold text-sm sm:text-base text-slate-900 tracking-tight">
+                  {location === LocationType.CELLAR ? 'Catálogo de Vinos & Champagne' : 'Catálogo de Licores & Destilados'}
+                </span>
+                <span className="text-[11px] text-slate-400 font-medium font-montserrat">({filteredItems.length} opciones)</span>
               </div>
 
               <div className="relative">
@@ -301,15 +303,15 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
                         }`}
                       >
                         <div className="pr-3 min-w-0">
-                          <p className={`text-xs sm:text-sm font-semibold truncate ${isSelected ? 'text-amber-950 font-bold' : 'text-slate-800'}`}>
+                          <p className={`text-xs sm:text-[14px] font-semibold truncate font-playfair ${isSelected ? 'text-amber-950 font-bold' : 'text-slate-900'}`}>
                             {item.name}
                           </p>
-                          <p className="text-[10px] text-slate-400 font-medium tracking-tight">
+                          <p className="text-[10px] text-slate-400 font-medium tracking-tight font-montserrat">
                             {item.category}
                           </p>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="text-xs font-bold text-amber-700 bg-amber-50/60 px-2 py-0.5 rounded border border-amber-200/50">
+                          <span className="text-xs font-bold text-amber-700 bg-amber-50/60 px-2 py-0.5 rounded border border-amber-200/50 font-montserrat">
                             {item.price}
                           </span>
                         </div>
@@ -317,7 +319,7 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
                     );
                   })
                 ) : (
-                  <div className="px-4 py-8 text-center text-slate-400 text-xs italic">
+                  <div className="px-4 py-8 text-center text-slate-400 text-xs italic font-montserrat">
                     No se encontraron productos coincidentes
                   </div>
                 )}
@@ -335,15 +337,15 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
                 ? 'bg-[#0b0e14] text-white border-amber-500/30 shadow-md' 
                 : 'bg-slate-50 border-dashed border-slate-200 text-slate-400'
             }`}>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-amber-400/90 mb-1">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-amber-400/90 mb-1 font-montserrat">
                 Producto Seleccionado
               </div>
               {itemName ? (
                 <div>
-                  <h4 className="font-bold text-sm sm:text-base text-amber-100 leading-snug line-clamp-2">
+                  <h4 className="font-bold text-base sm:text-lg text-amber-100 leading-snug line-clamp-2 font-playfair tracking-wide">
                     {itemName}
                   </h4>
-                  <div className="flex items-center gap-2 mt-1.5 text-xs text-slate-300">
+                  <div className="flex items-center gap-2 mt-1.5 text-xs text-slate-300 font-montserrat">
                     <span>{location === LocationType.CELLAR ? 'Bodega' : 'Bar'}</span>
                     <span>·</span>
                     <span>{selectedItemMeta?.price || '$0.00'}</span>
@@ -352,7 +354,7 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
                   </div>
                 </div>
               ) : (
-                <p className="text-xs italic py-1">
+                <p className="text-xs italic py-1 font-montserrat">
                   Selecciona un vino o licor de la lista para registrar...
                 </p>
               )}

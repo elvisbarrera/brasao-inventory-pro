@@ -93,16 +93,16 @@ const InventoryReport: React.FC<Props> = ({ report, rawEntries, onClear, onRemov
         <div className="p-4 border-b border-slate-100">
           <div className="flex justify-between items-start gap-2">
             <div className="min-w-0">
-              <span className="text-[10px] font-bold text-amber-700 uppercase tracking-widest block truncate">
+              <span className="text-[10px] font-bold text-amber-700 uppercase tracking-widest block truncate font-montserrat">
                 {item.category}
               </span>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-1 leading-tight line-clamp-2">
+              <h3 className="text-base sm:text-[17px] font-bold text-slate-900 mt-1 leading-snug line-clamp-2 font-playfair">
                 {item.name}
               </h3>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Valor Total</p>
-              <p className="text-base sm:text-lg font-extrabold text-amber-700">
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-montserrat">Valor Total</p>
+              <p className="text-base sm:text-lg font-black text-amber-800 font-montserrat">
                 ${item.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
@@ -156,46 +156,46 @@ const InventoryReport: React.FC<Props> = ({ report, rawEntries, onClear, onRemov
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {/* KPI 1: Total Valuation */}
         <div className="bg-[#0b0e14] text-white p-4 sm:p-5 rounded-2xl border border-amber-500/30 shadow-md">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-300 font-cinzel">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-300 font-montserrat">
             Valor Total
           </p>
-          <p className="text-lg sm:text-2xl font-black mt-1 text-white tracking-tight">
+          <p className="text-lg sm:text-2xl font-black mt-1 text-white tracking-tight font-montserrat">
             ${totalInventoryValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
-          <p className="text-[10px] text-slate-400 mt-1">Valuación estimada en inventario</p>
+          <p className="text-[10px] text-slate-400 mt-1 font-montserrat">Valuación estimada en inventario</p>
         </div>
 
         {/* KPI 2: Total Items */}
         <div className="bg-white border border-slate-200/90 p-4 sm:p-5 rounded-2xl shadow-xs">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 font-montserrat">
             Líneas de Producto
           </p>
-          <p className="text-lg sm:text-2xl font-black mt-1 text-slate-900 tracking-tight">
+          <p className="text-lg sm:text-2xl font-black mt-1 text-slate-900 tracking-tight font-montserrat">
             {report.length}
           </p>
-          <p className="text-[10px] text-slate-400 mt-1">Vinos y licores registrados</p>
+          <p className="text-[10px] text-slate-400 mt-1 font-montserrat">Vinos y licores registrados</p>
         </div>
 
         {/* KPI 3: Cellar Stock */}
         <div className="bg-white border border-slate-200/90 p-4 sm:p-5 rounded-2xl shadow-xs">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-700">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-700 font-montserrat">
             Stock Bodega (Cellar)
           </p>
-          <p className="text-lg sm:text-2xl font-black mt-1 text-slate-900 tracking-tight">
+          <p className="text-lg sm:text-2xl font-black mt-1 text-slate-900 tracking-tight font-montserrat">
             {totalCellarUnits.toLocaleString()}
           </p>
-          <p className="text-[10px] text-slate-400 mt-1">Botellas cerradas en reserva</p>
+          <p className="text-[10px] text-slate-400 mt-1 font-montserrat">Botellas cerradas en reserva</p>
         </div>
 
         {/* KPI 4: Bar Stock */}
         <div className="bg-white border border-slate-200/90 p-4 sm:p-5 rounded-2xl shadow-xs">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600 font-montserrat">
             Stock Barra (Bar)
           </p>
-          <p className="text-lg sm:text-2xl font-black mt-1 text-slate-900 tracking-tight">
+          <p className="text-lg sm:text-2xl font-black mt-1 text-slate-900 tracking-tight font-montserrat">
             {totalBarUnits.toFixed(2)}
           </p>
-          <p className="text-[10px] text-slate-400 mt-1">Botellas en servicio activo</p>
+          <p className="text-[10px] text-slate-400 mt-1 font-montserrat">Botellas en servicio activo</p>
         </div>
       </div>
 
@@ -208,7 +208,7 @@ const InventoryReport: React.FC<Props> = ({ report, rawEntries, onClear, onRemov
             placeholder="Filtrar por vino o licor..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium outline-none focus:ring-2 focus:ring-amber-500 font-montserrat"
           />
         </div>
 
@@ -216,7 +216,7 @@ const InventoryReport: React.FC<Props> = ({ report, rawEntries, onClear, onRemov
           <button 
             onClick={downloadCSV}
             disabled={report.length === 0}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#0b0e14] text-amber-200 hover:text-white rounded-xl active:scale-95 transition-all font-bold text-xs shadow-xs border border-amber-500/20 disabled:opacity-50"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#0b0e14] text-amber-200 hover:text-white rounded-xl active:scale-95 transition-all font-bold text-xs shadow-xs border border-amber-500/20 disabled:opacity-50 font-montserrat"
           >
             <Download size={14} />
             <span>Exportar CSV</span>
@@ -236,8 +236,8 @@ const InventoryReport: React.FC<Props> = ({ report, rawEntries, onClear, onRemov
       {/* Inventory Cards Section */}
       {report.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/80 p-6 space-y-2">
-          <p className="text-slate-400 font-medium text-sm">No hay registros de inventario guardados todavía.</p>
-          <p className="text-xs text-slate-400">Ve a la pestaña <strong>Conteo</strong> para registrar tus primeras botellas.</p>
+          <p className="text-slate-400 font-medium text-sm font-montserrat">No hay registros de inventario guardados todavía.</p>
+          <p className="text-xs text-slate-400 font-montserrat">Ve a la pestaña <strong>Conteo</strong> para registrar tus primeras botellas.</p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -245,11 +245,11 @@ const InventoryReport: React.FC<Props> = ({ report, rawEntries, onClear, onRemov
           {wines.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 border-l-4 border-amber-600 pl-3">
-                <WineIcon size={18} className="text-amber-600" />
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 uppercase tracking-wider font-cinzel">
+                <WineIcon size={20} className="text-amber-600" />
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight font-playfair">
                   Inventario de Vinos & Champagne
                 </h3>
-                <span className="text-xs text-slate-400">({wines.length})</span>
+                <span className="text-xs text-slate-400 font-montserrat font-medium">({wines.length})</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {wines.map((item, idx) => renderCard(item, idx))}
@@ -261,11 +261,11 @@ const InventoryReport: React.FC<Props> = ({ report, rawEntries, onClear, onRemov
           {liquors.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 border-l-4 border-slate-800 pl-3">
-                <Beer size={18} className="text-slate-800" />
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 uppercase tracking-wider font-cinzel">
+                <Beer size={20} className="text-slate-800" />
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight font-playfair">
                   Inventario de Licores & Destilados
                 </h3>
-                <span className="text-xs text-slate-400">({liquors.length})</span>
+                <span className="text-xs text-slate-400 font-montserrat font-medium">({liquors.length})</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {liquors.map((item, idx) => renderCard(item, idx))}
@@ -279,7 +279,7 @@ const InventoryReport: React.FC<Props> = ({ report, rawEntries, onClear, onRemov
       <div className="mt-8 space-y-3">
         <div className="flex items-center gap-2 px-1">
           <Clock size={16} className="text-slate-400" />
-          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest font-cinzel">
+          <h3 className="text-sm font-bold text-slate-800 tracking-tight font-playfair">
             Historial de Registros Recientes
           </h3>
         </div>
@@ -298,10 +298,10 @@ const InventoryReport: React.FC<Props> = ({ report, rawEntries, onClear, onRemov
                       type="text"
                       value={editItemName}
                       onChange={(e) => setEditItemName(e.target.value)}
-                      className="w-full font-semibold text-slate-900 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg px-2 py-1 outline-none mb-1.5 focus:ring-2 focus:ring-amber-500"
+                      className="w-full font-semibold text-slate-900 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg px-2 py-1 outline-none mb-1.5 focus:ring-2 focus:ring-amber-500 font-playfair"
                     />
                   ) : (
-                    <p className="font-bold text-slate-900 text-xs sm:text-sm leading-tight truncate">
+                    <p className="font-bold text-slate-900 text-xs sm:text-sm leading-tight truncate font-playfair">
                       {entry.itemName}
                     </p>
                   )}

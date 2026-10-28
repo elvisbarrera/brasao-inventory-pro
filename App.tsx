@@ -299,10 +299,10 @@ const App: React.FC = () => {
             />
             <div className="border-l border-slate-700/70 pl-2.5 sm:pl-3 flex flex-col justify-center min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[12px] sm:text-[14px] font-bold tracking-wider text-amber-200/95 font-cinzel truncate">
+                <span className="text-[13px] sm:text-[15px] font-extrabold tracking-[0.16em] text-amber-200/95 font-montserrat truncate">
                   INVENTORY PRO
                 </span>
-                <span className="hidden sm:inline-block text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded">
+                <span className="hidden sm:inline-block text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded font-montserrat">
                   Wine & Bar
                 </span>
               </div>

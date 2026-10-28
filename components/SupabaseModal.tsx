@@ -240,8 +240,8 @@ export const SupabaseModal: React.FC<Props> = ({ isOpen, onClose, onConnectionSu
               <Database size={22} />
             </div>
             <div>
-              <h2 className="text-base font-bold tracking-tight">Supabase Database Connection</h2>
-              <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 font-medium">
+              <h2 className="text-base sm:text-lg font-bold tracking-tight font-playfair">Supabase Database Connection</h2>
+              <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 font-medium font-montserrat">
                 Project: <span className="text-emerald-300 font-mono font-semibold">{config.projectId}</span>
                 {config.isCustom && <span className="bg-indigo-500/30 text-indigo-200 text-[9px] px-1.5 py-0.2 rounded font-bold uppercase">Custom</span>}
               </p>
