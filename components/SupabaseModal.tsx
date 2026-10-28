@@ -121,7 +121,7 @@ export const SupabaseModal: React.FC<Props> = ({ isOpen, onClose, onConnectionSu
     setIsTesting(true);
     setActionMessage(null);
     try {
-      const res = await testSupabaseConnection();
+      const res = await testSupabaseConnection(undefined, true);
       setTestResult(res);
       if (res.connected && res.tableExists) {
         onConnectionSuccess?.();

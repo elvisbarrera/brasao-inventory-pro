@@ -1,12 +1,13 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { LocationType, InventoryEntry } from '../types.ts';
 import { MASTER_WINE_LIST } from '../constants.tsx';
-import { processHandwrittenSheet } from '../services/geminiService.ts';
-import { Camera, Plus, Minus, Loader2, Search, X, Wine, Beer, Check, Sparkles } from 'lucide-react';
+import { scanInventoryPhoto, ScanItem } from '../services/scanService.ts';
+import ScanReview from './ScanReview.tsx';
+import { Camera, Plus, Minus, Loader2, Search, X, Wine, Beer, Check, Sparkles, Image as ImageIcon } from 'lucide-react';
 
 interface Props {
   onAdd: (entry: Omit<InventoryEntry, 'id' | 'timestamp'>) => void;
-  onOCRResults: (results: { name: string; qty: number }[]) => void;
+  onOCRResults: (results: Omit<InventoryEntry, 'id' | 'timestamp'>[]) => void;
 }
 
 const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
@@ -19,7 +20,11 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [addedToast, setAddedToast] = useState<string | null>(null);
 
+  const [scanItems, setScanItems] = useState<ScanItem[] | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const activeList = useMemo(() => {
@@ -99,25 +104,29 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const input = e.target;
+    const file = input.files?.[0];
+    input.value = ''; // allow picking the same photo again
     if (!file) return;
 
     setIsProcessing(true);
+    setScanError(null);
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = (reader.result as string).split(',')[1];
-        const results = await processHandwrittenSheet(base64);
-        onOCRResults(results);
-        setIsProcessing(false);
-        alert(`Se escanearon exitosamente ${results.length} productos manuscritos.`);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error(error);
+      const items = await scanInventoryPhoto(file, location);
+      setScanItems(items);
+    } catch (error: any) {
+      console.error('Scan error:', error);
+      setScanError(error?.message || 'Error al procesar la foto.');
+    } finally {
       setIsProcessing(false);
-      alert("Error al procesar la imagen manuscrita. Verifica tu conexión.");
     }
+  };
+
+  const confirmScan = (items: ScanItem[]) => {
+    onOCRResults(items.map(i => ({ itemName: i.itemName.trim(), qty: i.qty, location: i.location })));
+    setScanItems(null);
+    setAddedToast(`${items.length} productos del escaneo`);
+    setTimeout(() => setAddedToast(null), 2500);
   };
 
   const barButtons = [
@@ -144,30 +153,60 @@ const InventoryForm: React.FC<Props> = ({ onAdd, onOCRResults }) => {
           <div className="flex items-center gap-1.5 text-amber-300">
             <Sparkles size={14} />
             <h3 className="font-playfair font-bold text-sm sm:text-base tracking-wide text-amber-200">
-              Escaneo OCR con IA
+              Escanear con IA
             </h3>
           </div>
           <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5 truncate">
-            Captura fotos de hojas manuscritas para autocompletar botellas
+            {isProcessing ? 'Analizando foto…' : 'Foto de la hoja de conteo o de las botellas'}
           </p>
         </div>
-        <button 
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isProcessing}
-          className="bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white p-2.5 sm:p-3 rounded-xl shadow-lg active:scale-95 transition-all shrink-0 disabled:opacity-50"
-          title="Tomar foto de hoja manuscrita"
-        >
-          {isProcessing ? <Loader2 className="animate-spin" size={20} /> : <Camera size={20} />}
-        </button>
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          className="hidden" 
-          accept="image/*" 
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => galleryInputRef.current?.click()}
+            disabled={isProcessing}
+            className="bg-white/10 hover:bg-white/20 text-amber-200 p-2.5 sm:p-3 rounded-xl active:scale-95 transition-all disabled:opacity-50"
+            title="Elegir foto de la galería"
+            aria-label="Elegir foto de la galería"
+          >
+            <ImageIcon size={20} />
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessing}
+            className="bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white p-2.5 sm:p-3 rounded-xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
+            title="Tomar foto"
+            aria-label="Tomar foto"
+          >
+            {isProcessing ? <Loader2 className="animate-spin" size={20} /> : <Camera size={20} />}
+          </button>
+        </div>
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/*"
           capture="environment"
           onChange={handleFileChange}
         />
+        <input
+          type="file"
+          ref={galleryInputRef}
+          className="hidden"
+          accept="image/*"
+          onChange={handleFileChange}
+        />
       </div>
+
+      {scanError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center justify-between gap-2">
+          <span className="font-medium">{scanError}</span>
+          <button onClick={() => setScanError(null)} className="font-bold shrink-0">Cerrar</button>
+        </div>
+      )}
+
+      {scanItems && (
+        <ScanReview items={scanItems} onConfirm={confirmScan} onCancel={() => setScanItems(null)} />
+      )}
 
       {/* Main Responsive Grid Layout (iPad 2-Column, Mobile Stacked) */}
       <div className="md:grid md:grid-cols-12 md:gap-6 space-y-4 md:space-y-0">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { LocationType, InventoryEntry, GroupedReport } from './types.ts';
 import { supabaseService } from './services/supabaseService.ts';
 import { getSupabaseClient, onSupabaseConfigChange, testSupabaseConnection } from './supabaseClient.ts';
@@ -19,6 +19,9 @@ import {
 
 type SupabaseStatus = 'connected' | 'missing_table' | 'offline' | 'checking';
 
+const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
+  Promise.race([p, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'count' | 'report'>('count');
   const [entries, setEntries] = useState<InventoryEntry[]>(() => {
@@ -28,110 +31,148 @@ const App: React.FC = () => {
       return [];
     }
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [supabaseStatus, setSupabaseStatus] = useState<SupabaseStatus>('checking');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const loadData = useCallback(async () => {
+  const [pendingCount, setPendingCount] = useState<number>(() => storageService.pendingCount());
+
+  const syncingRef = useRef(false);
+  const rerunRef = useRef(false);
+
+  const TEST_ITEM_NAME = 'Connection Test Item';
+
+  /**
+   * Single sync routine (safe to call any time):
+   * 1. push local changes that are still pending (upsert = idempotent)
+   * 2. push pending deletes
+   * 3. pull the cloud copy and merge, keeping anything still pending locally
+   * Nothing local is ever discarded until Supabase has confirmed it.
+   */
+  const syncNow = useCallback(async () => {
+    if (syncingRef.current) {
+      rerunRef.current = true;
+      return;
+    }
+    syncingRef.current = true;
+    setIsSyncing(true);
     try {
-      setLoading(true);
+      const test = await withTimeout(testSupabaseConnection(), 10000);
+      if (!test.connected) {
+        setSupabaseStatus('offline');
+        return;
+      }
+      if (!test.tableExists) {
+        setSupabaseStatus('missing_table');
+        return;
+      }
+
+      // 1. Upload pending creates/edits
+      const upIds = storageService.getPendingUpserts();
+      if (upIds.length) {
+        const local = storageService.getEntries();
+        const toUpload = local.filter(e => upIds.includes(e.id));
+        const saved = await supabaseService.upsertEntries(toUpload);
+        // ids that are no longer in local storage are also done
+        const orphans = upIds.filter(id => !local.some(e => e.id === id));
+        storageService.clearUpserts([...saved, ...orphans]);
+      }
+
+      // 2. Upload pending deletes
+      const delIds = storageService.getPendingDeletes();
+      if (delIds.length) {
+        const removed = await supabaseService.removeEntries(delIds);
+        storageService.clearDeletes(removed);
+      }
+
+      // 3. Pull + merge
+      const cloud = await supabaseService.fetchEntries();
+
+      // Clean up leftover rows from the old connection test
+      const junk = cloud.filter(e => e.itemName === TEST_ITEM_NAME).map(e => e.id);
+      if (junk.length) supabaseService.removeEntries(junk).catch(() => {});
+
+      setEntries(prev => {
+        const pendingUp = new Set(storageService.getPendingUpserts());
+        const pendingDel = new Set(storageService.getPendingDeletes());
+        const localPending = prev.filter(e => pendingUp.has(e.id));
+        const merged = [
+          ...localPending,
+          ...cloud.filter(e => !pendingUp.has(e.id) && !pendingDel.has(e.id) && e.itemName !== TEST_ITEM_NAME),
+        ].sort((a, b) => b.timestamp - a.timestamp);
+        storageService.saveEntries(merged);
+        return merged;
+      });
+
+      setSupabaseStatus('connected');
+      setLastSynced(new Date());
       setError(null);
-      setSupabaseStatus('checking');
-
-      const timeoutPromise = new Promise<{ connected: boolean; tableExists: boolean; canRead: boolean; canWrite: boolean }>((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timeout')), 3500)
-      );
-
-      const testRes = await Promise.race([testSupabaseConnection(), timeoutPromise]);
-
-      if (testRes.connected && testRes.tableExists) {
-        const data = await supabaseService.fetchEntries();
-        setEntries(data);
-        storageService.saveEntries(data);
-        setSupabaseStatus('connected');
-        setLastSynced(new Date());
-      } else if (testRes.connected && !testRes.tableExists) {
-        setSupabaseStatus('missing_table');
-        const localData = storageService.getEntries();
-        setEntries(localData);
-      } else {
-        setSupabaseStatus('offline');
-        const localData = storageService.getEntries();
-        setEntries(localData);
-      }
     } catch (err: any) {
-      console.warn("Supabase fetch warning:", err.message);
-      if (err.code === 'TABLE_NOT_FOUND' || err.message?.includes('not found')) {
-        setSupabaseStatus('missing_table');
-      } else {
-        setSupabaseStatus('offline');
-      }
-      const localData = storageService.getEntries();
-      setEntries(localData);
+      console.warn('Sync failed, data kept on this device:', err?.message);
+      if (err?.code === 'TABLE_NOT_FOUND') setSupabaseStatus('missing_table');
+      else if (err?.message === 'timeout') setSupabaseStatus('offline');
+      else setError('No se pudo sincronizar (se reintentará): ' + err?.message);
     } finally {
+      setPendingCount(storageService.pendingCount());
+      setIsSyncing(false);
       setLoading(false);
+      syncingRef.current = false;
+      if (rerunRef.current) {
+        rerunRef.current = false;
+        setTimeout(() => syncNow(), 0);
+      }
     }
   }, []);
 
+  const loadData = syncNow;
+
   useEffect(() => {
-    loadData();
+    setLoading(true);
+    syncNow();
 
     let channel: any = null;
+
+    const toEntry = (row: any): InventoryEntry => ({
+      id: String(row.id),
+      timestamp: Number(row.timestamp) || Date.now(),
+      itemName: row.itemName ?? row.itemname ?? row.item_name ?? 'Item',
+      location: row.location === 'Bar' ? LocationType.BAR : LocationType.CELLAR,
+      qty: Number(row.qty) || 0,
+    });
 
     const setupRealtime = () => {
       const client = getSupabaseClient();
       if (channel) {
-        try { client.removeChannel(channel); } catch (e) { /* ignore */ }
+        try { client.removeChannel(channel); } catch { /* ignore */ }
       }
-
       channel = client
         .channel('inventory-changes')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'inventory' },
-          (payload) => {
-            setLastSynced(new Date());
-            if (payload.eventType === 'INSERT') {
-              const newRow = payload.new as any;
-              const mapped: InventoryEntry = {
-                id: String(newRow.id),
-                timestamp: Number(newRow.timestamp) || Date.now(),
-                itemName: newRow.itemName ?? newRow.itemname ?? newRow.item_name ?? 'Item',
-                location: newRow.location === 'Bar' ? LocationType.BAR : LocationType.CELLAR,
-                qty: Number(newRow.qty) || 0
-              };
-              setEntries(prev => {
-                if (prev.find(e => e.id === mapped.id)) return prev;
-                const next = [mapped, ...prev];
-                storageService.saveEntries(next);
-                return next;
-              });
-            } else if (payload.eventType === 'DELETE') {
-              setEntries(prev => {
-                const next = prev.filter(e => e.id !== String(payload.old.id));
-                storageService.saveEntries(next);
-                return next;
-              });
-            } else if (payload.eventType === 'UPDATE') {
-              const updatedRow = payload.new as any;
-              const mapped: InventoryEntry = {
-                id: String(updatedRow.id),
-                timestamp: Number(updatedRow.timestamp) || Date.now(),
-                itemName: updatedRow.itemName ?? updatedRow.itemname ?? updatedRow.item_name ?? 'Item',
-                location: updatedRow.location === 'Bar' ? LocationType.BAR : LocationType.CELLAR,
-                qty: Number(updatedRow.qty) || 0
-              };
-              setEntries(prev => {
-                const next = prev.map(e => e.id === mapped.id ? mapped : e);
-                storageService.saveEntries(next);
-                return next;
-              });
-            }
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, (payload: any) => {
+          setLastSynced(new Date());
+          const pendingDel = new Set(storageService.getPendingDeletes());
+          if (payload.eventType === 'DELETE') {
+            const id = String(payload.old?.id);
+            setEntries(prev => {
+              const next = prev.filter(e => e.id !== id);
+              storageService.saveEntries(next);
+              return next;
+            });
+            return;
           }
-        )
+          const mapped = toEntry(payload.new);
+          if (mapped.itemName === TEST_ITEM_NAME || pendingDel.has(mapped.id)) return;
+          // Don't overwrite a local edit that hasn't been uploaded yet
+          if (storageService.getPendingUpserts().includes(mapped.id)) return;
+          setEntries(prev => {
+            const exists = prev.some(e => e.id === mapped.id);
+            const next = exists ? prev.map(e => (e.id === mapped.id ? mapped : e)) : [mapped, ...prev];
+            storageService.saveEntries(next);
+            return next;
+          });
+        })
         .subscribe();
     };
 
@@ -139,121 +180,87 @@ const App: React.FC = () => {
 
     const unsubscribeConfig = onSupabaseConfigChange(() => {
       setupRealtime();
-      loadData();
+      syncNow();
     });
+
+    // Retry whenever we come back online / to the app, and every 20s while something is pending
+    const onOnline = () => syncNow();
+    const onVisible = () => { if (document.visibilityState === 'visible') syncNow(); };
+    window.addEventListener('online', onOnline);
+    document.addEventListener('visibilitychange', onVisible);
+    const interval = window.setInterval(() => {
+      if (storageService.pendingCount() > 0) syncNow();
+    }, 20000);
 
     return () => {
       unsubscribeConfig();
-      if (channel) {
-        getSupabaseClient().removeChannel(channel);
-      }
+      window.removeEventListener('online', onOnline);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(interval);
+      if (channel) getSupabaseClient().removeChannel(channel);
     };
-  }, [loadData]);
+  }, [syncNow]);
 
-  const addEntry = async (entry: Omit<InventoryEntry, 'id' | 'timestamp'>) => {
-    const tempId = crypto.randomUUID();
-    const newEntry: InventoryEntry = {
-      ...entry,
-      id: tempId,
-      timestamp: Date.now(),
-    };
-
-    setIsSyncing(true);
-
-    if (supabaseStatus === 'connected') {
-      try {
-        setEntries(prev => {
-          const next = [newEntry, ...prev];
-          storageService.saveEntries(next);
-          return next;
-        });
-
-        const savedEntry = await supabaseService.addEntry(newEntry);
-        setEntries(prev => {
-          const next = prev.map(e => e.id === tempId ? savedEntry : e);
-          storageService.saveEntries(next);
-          return next;
-        });
-        setLastSynced(new Date());
-      } catch (err: any) {
-        console.error("Cloud sync failed, keeping in local storage:", err.message);
-        setError("Guardado en local. Error en nube: " + err.message);
-      } finally {
-        setIsSyncing(false);
-      }
-    } else {
-      setEntries(prev => {
-        const next = [newEntry, ...prev];
-        storageService.saveEntries(next);
-        return next;
-      });
-      setIsSyncing(false);
-    }
+  // Every change is saved on the device first and queued; syncNow uploads it.
+  const addEntries = (items: Omit<InventoryEntry, 'id' | 'timestamp'>[]) => {
+    if (items.length === 0) return;
+    const now = Date.now();
+    const newEntries: InventoryEntry[] = items.map((item, i) => ({
+      ...item,
+      id: crypto.randomUUID(),
+      timestamp: now - i, // keep scan order stable
+    }));
+    newEntries.forEach(e => storageService.markUpsert(e.id));
+    setEntries(prev => {
+      const next = [...newEntries, ...prev];
+      storageService.saveEntries(next);
+      return next;
+    });
+    setPendingCount(storageService.pendingCount());
+    syncNow();
   };
 
-  const removeEntry = async (id: string) => {
-    setIsSyncing(true);
+  const addEntry = (entry: Omit<InventoryEntry, 'id' | 'timestamp'>) => addEntries([entry]);
+
+  const removeEntry = (id: string) => {
+    storageService.markDelete(id);
     setEntries(prev => {
       const next = prev.filter(e => e.id !== id);
       storageService.saveEntries(next);
       return next;
     });
-
-    if (supabaseStatus === 'connected') {
-      try {
-        await supabaseService.removeEntry(id);
-        setLastSynced(new Date());
-      } catch (err: any) {
-        setError(err.message);
-        loadData();
-      } finally {
-        setIsSyncing(false);
-      }
-    } else {
-      setIsSyncing(false);
-    }
+    setPendingCount(storageService.pendingCount());
+    syncNow();
   };
 
-  const updateEntry = async (id: string, updatedFields: Partial<InventoryEntry>) => {
-    setIsSyncing(true);
+  const updateEntry = (id: string, updatedFields: Partial<InventoryEntry>) => {
+    storageService.markUpsert(id);
     setEntries(prev => {
-      const next = prev.map(e => e.id === id ? { ...e, ...updatedFields } : e);
+      const next = prev.map(e => (e.id === id ? { ...e, ...updatedFields, id } : e));
       storageService.saveEntries(next);
       return next;
     });
-
-    if (supabaseStatus === 'connected') {
-      try {
-        await supabaseService.updateEntry(id, updatedFields);
-        setLastSynced(new Date());
-      } catch (err: any) {
-        setError(err.message);
-        loadData();
-      } finally {
-        setIsSyncing(false);
-      }
-    } else {
-      setIsSyncing(false);
-    }
+    setPendingCount(storageService.pendingCount());
+    syncNow();
   };
 
   const clearInventory = async () => {
-    if (window.confirm("¿Seguro que deseas eliminar todos los registros de inventario?")) {
-      try {
-        setIsSyncing(true);
-        setEntries([]);
-        storageService.clearAll();
-
-        if (supabaseStatus === 'connected') {
-          await supabaseService.clearAll();
-        }
-        setLastSynced(new Date());
-      } catch (err: any) {
-        setError(err.message);
-        loadData();
-      } finally {
-        setIsSyncing(false);
-      }
+    if (supabaseStatus !== 'connected') {
+      alert('Necesitas conexión a la base de datos para borrar todo el inventario.');
+      return;
+    }
+    if (!window.confirm('¿Seguro que deseas eliminar todos los registros de inventario?')) return;
+    try {
+      setIsSyncing(true);
+      await supabaseService.clearAll();
+      storageService.clearAll();
+      setEntries([]);
+      setPendingCount(0);
+      setLastSynced(new Date());
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -349,7 +356,8 @@ const App: React.FC = () => {
                 supabaseStatus === 'missing_table' ? 'bg-amber-400 animate-pulse' : 'bg-slate-400'
               }`} />
               <span className="font-bold">
-                {supabaseStatus === 'connected' ? 'Live' : supabaseStatus === 'missing_table' ? 'Setup DB' : 'Local'}
+                {supabaseStatus === 'connected' ? 'Live' : supabaseStatus === 'missing_table' ? 'Setup DB' : supabaseStatus === 'checking' ? '…' : 'Local'}
+                {pendingCount > 0 && ` · ${pendingCount} sin subir`}
               </span>
             </button>
           </div>
@@ -392,7 +400,10 @@ const App: React.FC = () => {
           <div className="mb-4 p-3 bg-white border border-slate-200 rounded-xl text-slate-700 flex items-center justify-between gap-3 text-xs shadow-sm">
             <div className="flex items-center gap-2">
               <HardDrive size={15} className="text-slate-500" />
-              <span>Modo almacenamiento local activo</span>
+              <span>
+                Sin conexión: se guarda en este dispositivo
+                {pendingCount > 0 ? ` (${pendingCount} por subir, se suben solos al volver la señal)` : ''}
+              </span>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
@@ -429,15 +440,7 @@ const App: React.FC = () => {
         ) : activeTab === 'count' ? (
           <InventoryForm 
             onAdd={addEntry} 
-            onOCRResults={(results) => {
-              results.forEach(res => {
-                addEntry({
-                  itemName: res.name,
-                  qty: res.qty,
-                  location: LocationType.CELLAR
-                });
-              });
-            }} 
+            onOCRResults={addEntries}
           />
         ) : (
           <InventoryReport 

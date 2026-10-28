@@ -156,22 +156,46 @@ export const supabaseService = {
     }
   },
 
+  /**
+   * Insert-or-update many rows at once (idempotent: safe to retry).
+   * Returns the ids that were saved.
+   */
+  async upsertEntries(entries: InventoryEntry[]): Promise<string[]> {
+    if (entries.length === 0) return [];
+    const client = getSupabaseClient();
+    const rows = entries.map(e => ({
+      id: e.id,
+      timestamp: e.timestamp,
+      itemName: e.itemName,
+      location: e.location,
+      qty: e.qty,
+    }));
+    let { error } = await client.from('inventory').upsert(rows, { onConflict: 'id' });
+
+    if (error && (error.message.includes('column "itemName"') || error.message.includes('itemName does not exist') || error.message.includes("'itemName'"))) {
+      const lower = rows.map(({ itemName, ...rest }) => ({ ...rest, itemname: itemName }));
+      ({ error } = await client.from('inventory').upsert(lower, { onConflict: 'id' }));
+    }
+    if (error) throw new Error(error.message);
+    return entries.map(e => e.id);
+  },
+
+  async removeEntries(ids: string[]): Promise<string[]> {
+    if (ids.length === 0) return [];
+    const client = getSupabaseClient();
+    const { error } = await client.from('inventory').delete().in('id', ids);
+    if (error) throw new Error(error.message);
+    return ids;
+  },
+
   async syncLocalToCloud(localEntries: InventoryEntry[]): Promise<{ added: number; errors: number }> {
     if (localEntries.length === 0) return { added: 0, errors: 0 };
-    
-    let added = 0;
-    let errors = 0;
-
-    for (const entry of localEntries) {
-      try {
-        await this.addEntry(entry);
-        added++;
-      } catch (e) {
-        console.warn('Sync item failed:', entry.itemName, e);
-        errors++;
-      }
+    try {
+      const saved = await this.upsertEntries(localEntries);
+      return { added: saved.length, errors: 0 };
+    } catch (e) {
+      console.warn('Bulk sync failed:', e);
+      return { added: 0, errors: localEntries.length };
     }
-
-    return { added, errors };
   }
 };

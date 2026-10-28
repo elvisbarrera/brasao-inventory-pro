@@ -141,15 +141,20 @@ export interface ConnectionTestResult {
   statusCode?: number;
 }
 
-export async function testSupabaseConnection(overrideClient?: SupabaseClient): Promise<ConnectionTestResult> {
+// checkWrite=true inserts and deletes a temporary row. Only use it from the
+// setup modal, never on every app load (it pollutes the table and realtime feed).
+export async function testSupabaseConnection(
+  overrideClient?: SupabaseClient,
+  checkWrite = false
+): Promise<ConnectionTestResult> {
   const client = overrideClient || currentClient;
   
   try {
     // 1. Test basic table read
     const { data, error, count, status } = await client
       .from('inventory')
-      .select('*', { count: 'exact', head: false })
-      .limit(5);
+      .select('id', { count: 'exact', head: false })
+      .limit(1);
 
     if (error) {
       // Check for table not found error codes (PGRST205 or 42P01)
@@ -167,6 +172,16 @@ export async function testSupabaseConnection(overrideClient?: SupabaseClient): P
         canWrite: false,
         error: isMissingTable ? "Table 'public.inventory' not found in schema" : error.message,
         statusCode: status
+      };
+    }
+
+    if (!checkWrite) {
+      return {
+        connected: true,
+        tableExists: true,
+        canRead: true,
+        canWrite: true,
+        rowCount: count ?? (data?.length || 0)
       };
     }
 
