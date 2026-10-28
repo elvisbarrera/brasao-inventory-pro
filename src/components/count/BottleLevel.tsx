@@ -61,8 +61,8 @@ export function BottleLevel({ value, onChange }: { value: number; onChange: (v: 
                 active ? 'border-gold bg-gold/15 text-fg' : 'border-line bg-field text-muted hover:text-fg',
               )}
             >
-              <span className="font-display text-xl italic">{l.label}</span>
-              <span className="text-xs tabular-nums">{l.value}</span>
+              <span className="text-lg font-bold">{l.label}</span>
+              <span className="num text-xs">{l.value}</span>
             </button>
           );
         })}
