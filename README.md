@@ -54,7 +54,7 @@ Type checking runs in strict mode: `npx tsc --noEmit`.
 
 | Where | Variable | Purpose |
 | --- | --- | --- |
-| Netlify env (scope: Functions) | `GEMINI_API_KEY` | Required for photo scanning. Create at https://aistudio.google.com/apikey |
+| Netlify env (scope: Functions, secret) | `GEMINI_API_KEY` | Required for photo scanning (set). Create at https://aistudio.google.com/apikey |
 | Netlify env (optional) | `GEMINI_MODEL` | Force a model. Default tries `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash` |
 | Build env (optional) | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Use a different Supabase project. Defaults to the Brasão project |
 
