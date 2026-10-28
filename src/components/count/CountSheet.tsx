@@ -27,7 +27,7 @@ function Stepper({ value, onChange, label }: { value: number; onChange: (v: numb
       <button
         onClick={() => onChange(Math.max(0, value - 1))}
         aria-label={`Remove one from ${label}`}
-        className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-line bg-ink-3 text-cream transition active:scale-95 disabled:opacity-30"
+        className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-line bg-field text-fg transition active:scale-95 disabled:opacity-30"
         disabled={value <= 0}
       >
         <Minus size={26} />
@@ -38,12 +38,12 @@ function Stepper({ value, onChange, label }: { value: number; onChange: (v: numb
         value={value}
         onChange={e => onChange(Math.max(0, parseInt(e.target.value.replace(/\D/g, ''), 10) || 0))}
         onFocus={e => e.target.select()}
-        className="font-display w-full min-w-0 bg-transparent text-center text-7xl leading-none italic text-cream tabular-nums outline-none"
+        className="font-display w-full min-w-0 bg-transparent text-center text-7xl leading-none italic text-fg tabular-nums outline-none"
       />
       <button
         onClick={() => onChange(value + 1)}
         aria-label={`Add one to ${label}`}
-        className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gold text-ink transition active:scale-95"
+        className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gold text-on-gold transition active:scale-95"
       >
         <Plus size={26} />
       </button>
@@ -74,7 +74,7 @@ export function CountSheet({ target, location, onClose, onSave }: Props) {
       subtitle={
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span>{target && shortCategory(target.category)}</span>
-          {target?.price && <span className="text-gold">{target.price}{isBar ? ' per pour' : ''}</span>}
+          {target?.price && <span className="text-gold-ink">{target.price}{isBar ? ' per pour' : ''}</span>}
           {target && target.alreadyCounted > 0 && (
             <span>Already counted here: {formatQty(target.alreadyCounted)}</span>
           )}
@@ -96,7 +96,7 @@ export function CountSheet({ target, location, onClose, onSave }: Props) {
                 <button
                   key={n}
                   onClick={() => setBottles(b => b + n)}
-                  className="flex-1 rounded-xl border border-line bg-ink-3 py-2.5 text-sm font-bold text-muted transition hover:text-cream"
+                  className="flex-1 rounded-xl border border-line bg-field py-2.5 text-sm font-bold text-muted transition hover:text-fg"
                 >
                   + case of {n}
                 </button>

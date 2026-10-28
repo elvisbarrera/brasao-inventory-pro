@@ -73,7 +73,7 @@ export function ScanReview({ items: initial, preview, onClose, onConfirm }: Prop
       </datalist>
 
       {preview && (
-        <img src={preview} alt="Scanned photo" className="mb-4 h-40 w-full rounded-2xl border border-line bg-ink object-contain" />
+        <img src={preview} alt="Scanned photo" className="mb-4 h-40 w-full rounded-2xl border border-line bg-page object-contain" />
       )}
 
       {items.length === 0 ? (
@@ -85,7 +85,7 @@ export function ScanReview({ items: initial, preview, onClose, onConfirm }: Prop
           {items.map(it => (
             <li
               key={it.key}
-              className={cx('rounded-2xl border p-3.5 transition', it.selected ? 'border-line bg-ink-3/60' : 'border-line/50 opacity-55')}
+              className={cx('rounded-2xl border p-3.5 transition', it.selected ? 'border-line bg-field/60' : 'border-line/50 opacity-55')}
             >
               <div className="flex items-start gap-3">
                 <input
@@ -106,7 +106,7 @@ export function ScanReview({ items: initial, preview, onClose, onConfirm }: Prop
                   {(!it.matched || (it.rawName && it.rawName !== it.itemName) || (it.confidence > 0 && it.confidence < 0.6)) && (
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
                       {!it.matched && (
-                        <span className="flex items-center gap-1 font-bold text-gold">
+                        <span className="flex items-center gap-1 font-bold text-gold-ink">
                           <AlertTriangle size={13} /> Pick the catalog product
                         </span>
                       )}

@@ -20,12 +20,12 @@ export function BottleLevel({ value, onChange }: { value: number; onChange: (v: 
             <path d="M32 4h16v22c0 6 16 10 16 26v84c0 6-4 10-10 10H26c-6 0-10-4-10-10V52c0-16 16-20 16-26z" />
           </clipPath>
           <linearGradient id="liquid" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#e2cc9f" />
-            <stop offset="1" stopColor="#9c7f48" />
+            <stop offset="0" stopColor="#d6c095" />
+            <stop offset="1" stopColor="#a98c55" />
           </linearGradient>
         </defs>
         <g clipPath="url(#bottle-body)">
-          <rect x="0" y="0" width="80" height="150" fill="#26221c" />
+          <rect x="0" y="0" width="80" height="150" fill="#f1ebe1" />
           <rect
             x="0"
             y={fillTop}
@@ -35,14 +35,14 @@ export function BottleLevel({ value, onChange }: { value: number; onChange: (v: 
             style={{ transition: 'y 0.35s ease, height 0.35s ease' }}
           />
           {[0.25, 0.5, 0.75].map(l => (
-            <line key={l} x1="16" x2="22" y1={140 - 104 * l} y2={140 - 104 * l} stroke="#141210" strokeOpacity=".5" />
+            <line key={l} x1="16" x2="22" y1={140 - 104 * l} y2={140 - 104 * l} stroke="#1c1b19" strokeOpacity=".35" />
           ))}
         </g>
         <path
           d="M32 4h16v22c0 6 16 10 16 26v84c0 6-4 10-10 10H26c-6 0-10-4-10-10V52c0-16 16-20 16-26z"
           fill="none"
-          stroke="#c9a96e"
-          strokeOpacity=".7"
+          stroke="#a98c55"
+          strokeOpacity=".9"
           strokeWidth="1.5"
         />
       </svg>
@@ -58,7 +58,7 @@ export function BottleLevel({ value, onChange }: { value: number; onChange: (v: 
               onClick={() => onChange(l.value)}
               className={cx(
                 'flex items-center justify-between rounded-xl border px-4 py-2.5 text-left transition focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:outline-none',
-                active ? 'border-gold bg-gold/15 text-cream' : 'border-line bg-ink-3 text-muted hover:text-cream',
+                active ? 'border-gold bg-gold/15 text-fg' : 'border-line bg-field text-muted hover:text-fg',
               )}
             >
               <span className="font-display text-xl italic">{l.label}</span>

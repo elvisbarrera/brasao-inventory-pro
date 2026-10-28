@@ -64,7 +64,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
 
   if (entries.length === 0) {
     return (
-      <div className="card trellis flex flex-col items-center px-6 py-16 text-center">
+      <div className="card flex flex-col items-center px-6 py-16 text-center">
         <h1 className="font-display text-3xl italic">No counts yet</h1>
         <p className="mt-3 max-w-sm text-muted">
           Count products on the Count tab or scan a count sheet. The inventory value shows up here.
@@ -75,23 +75,28 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
 
   return (
     <div className="space-y-6">
-      <section className="card trellis overflow-hidden p-5 md:p-7">
-        <p className="text-sm text-muted">Inventory value at menu price</p>
+      <header>
+        <h1 className="font-sans text-[34px] leading-[0.95] font-black tracking-tight uppercase md:text-5xl">Inventory</h1>
+        <p className="font-display text-[34px] leading-none italic text-gold-deep md:text-5xl">report.</p>
+      </header>
+
+      <section className="night overflow-hidden rounded-2xl p-5 text-[#f4f0ee] md:p-7">
+        <p className="text-sm text-[#c9bfb0]">Inventory value at menu price</p>
         <p className="font-display mt-1 text-5xl leading-none italic text-gold md:text-6xl">{formatMoney(totals.value)}</p>
-        <dl className="mt-6 grid grid-cols-3 gap-3 border-t border-line/70 pt-4">
+        <dl className="mt-6 grid grid-cols-3 gap-3 border-t border-white/10 pt-4">
           {[
             ['Bottles in cellar', formatQty(totals.cellar)],
             ['Bottles at bar', formatQty(totals.bar)],
             ['Products', String(totals.products)],
           ].map(([k, v]) => (
             <div key={k}>
-              <dt className="text-xs text-muted">{k}</dt>
-              <dd className="font-display mt-1 text-2xl italic text-cream">{v}</dd>
+              <dt className="text-xs text-[#c9bfb0]">{k}</dt>
+              <dd className="font-display mt-1 text-2xl italic text-[#f4f0ee]">{v}</dd>
             </div>
           ))}
         </dl>
         {totals.uncategorized > 0 && (
-          <p className="mt-4 rounded-xl bg-gold/10 px-3 py-2 text-[13px] text-gold-soft">
+          <p className="mt-4 rounded-xl bg-white/5 px-3 py-2 text-[13px] text-gold-soft">
             {totals.uncategorized} {totals.uncategorized === 1 ? 'product is' : 'products are'} not in the catalog and count
             as $0.
           </p>
@@ -114,7 +119,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
               <button
                 onClick={() => setQuery('')}
                 aria-label="Clear search"
-                className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 text-muted hover:text-cream"
+                className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 text-muted hover:text-fg"
               >
                 <X size={16} />
               </button>
@@ -139,7 +144,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
               aria-pressed={filter === f}
               className={cx(
                 'rounded-full border px-4 py-1.5 text-[13px] font-bold transition',
-                filter === f ? 'border-gold bg-gold text-ink' : 'border-line text-muted hover:text-cream',
+                filter === f ? 'border-fg bg-fg text-page' : 'border-line bg-surface text-muted hover:text-fg',
               )}
             >
               {label}
@@ -152,7 +157,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
         {groups.map(([category, list]) => (
           <div key={category}>
             <h2 className="mb-2 flex items-baseline justify-between px-1">
-              <span className="font-display text-xl italic text-cream">{shortCategory(category)}</span>
+              <span className="font-display text-xl italic text-fg">{shortCategory(category)}</span>
               <span className="text-sm text-muted">{formatMoney(list.reduce((s, r) => s + r.totalValue, 0))}</span>
             </h2>
             <ul className="card divide-y divide-line/60 overflow-hidden">
@@ -160,10 +165,10 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
                 <li key={r.name}>
                   <button
                     onClick={() => setSelected(r.name)}
-                    className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-ink-3 focus-visible:bg-ink-3 focus-visible:outline-none"
+                    className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-field focus-visible:bg-field focus-visible:outline-none"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[15px] font-bold text-cream">{r.name}</p>
+                      <p className="truncate text-[15px] font-bold text-fg">{r.name}</p>
                       <p className="mt-0.5 text-[13px] text-muted">
                         {r.cellarQty > 0 && `Cellar ${formatQty(r.cellarQty)}`}
                         {r.cellarQty > 0 && r.barQty > 0 && '  ·  '}
@@ -171,8 +176,8 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-display text-xl italic text-cream tabular-nums">{formatQty(r.totalQty)}</p>
-                      <p className="text-[13px] text-gold/90">{formatMoney(r.totalValue)}</p>
+                      <p className="font-display text-xl italic text-fg tabular-nums">{formatQty(r.totalQty)}</p>
+                      <p className="text-[13px] text-gold-ink/90">{formatMoney(r.totalValue)}</p>
                     </div>
                     <ChevronRight size={18} className="shrink-0 text-muted" />
                   </button>
@@ -204,7 +209,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
             </Button>
             <Button
               variant="primary"
-              className="flex-1 !bg-danger !text-ink"
+              className="flex-1 !bg-danger !text-white"
               disabled={!canClear || clearing}
               onClick={clear}
             >
@@ -213,7 +218,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
           </div>
         }
       >
-        {!canClear && <p className="pb-2 text-sm text-gold-soft">You need an internet connection to clear the inventory.</p>}
+        {!canClear && <p className="pb-2 text-sm text-gold-ink">You need an internet connection to clear the inventory.</p>}
       </Sheet>
     </div>
   );

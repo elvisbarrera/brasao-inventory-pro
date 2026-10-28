@@ -37,7 +37,9 @@ export default function App() {
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      <main className="mx-auto max-w-5xl px-4 pt-5 pb-36 md:px-8 md:pt-8">
+      <div className="relative">
+      <div aria-hidden className="lattice-band pointer-events-none absolute inset-x-0 top-0" />
+      <main className="relative mx-auto max-w-5xl px-4 pt-8 pb-36 md:px-8 md:pt-12">
         {inventory.status === 'missing_table' && (
           <button
             onClick={() => setSettingsOpen(true)}
@@ -45,17 +47,17 @@ export default function App() {
           >
             <Database size={20} className="shrink-0 text-danger" />
             <span className="text-sm">
-              <strong className="block text-cream">The database needs a one-time setup</strong>
+              <strong className="block text-fg">The database needs a one-time setup</strong>
               <span className="text-muted">Counts are being saved on this device. Tap to see the setup steps.</span>
             </span>
           </button>
         )}
 
         {inventory.error && (
-          <div className="mb-5 flex items-start gap-3 rounded-2xl border border-line bg-ink-2 p-4 text-sm">
-            <AlertCircle size={18} className="mt-0.5 shrink-0 text-gold" />
+          <div className="mb-5 flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 text-sm">
+            <AlertCircle size={18} className="mt-0.5 shrink-0 text-gold-ink" />
             <p className="flex-1 text-muted">{inventory.error}</p>
-            <button onClick={inventory.dismissError} aria-label="Dismiss" className="text-muted hover:text-cream">
+            <button onClick={inventory.dismissError} aria-label="Dismiss" className="text-muted hover:text-fg">
               <X size={16} />
             </button>
           </div>
@@ -73,6 +75,7 @@ export default function App() {
           />
         )}
       </main>
+      </div>
 
       <BottomNav tab={tab} onTab={setTab} onScan={scanner.start} scanning={scanner.busy} />
       {scanner.input}

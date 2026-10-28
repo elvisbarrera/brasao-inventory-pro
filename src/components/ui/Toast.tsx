@@ -33,7 +33,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             className={`animate-rise flex max-w-md items-center gap-2.5 rounded-full border px-4 py-2.5 text-sm font-bold shadow-xl ${
-              t.tone === 'error' ? 'border-danger/50 bg-[#2a1614] text-[#f4c1bc]' : 'border-gold/40 bg-ink-3 text-cream'
+              t.tone === 'error' ? 'border-danger/40 bg-[#fbeceb] text-danger' : 'border-night bg-night text-[#f4f0ee]'
             }`}
           >
             {t.tone === 'error' ? (

@@ -73,9 +73,10 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-[32px] leading-none italic md:text-4xl">
-              {isBar ? 'Bar count' : 'Cellar count'}
+            <h1 className="font-sans text-[34px] leading-[0.95] font-black tracking-tight uppercase md:text-5xl">
+              {isBar ? 'The bar' : 'The cellar'}
             </h1>
+            <p className="font-display text-[34px] leading-none italic text-gold-deep md:text-5xl">count.</p>
             <p className="mt-2 text-sm text-muted">
               {countedProducts > 0
                 ? `${countedProducts} of ${list.length} products counted`
@@ -100,7 +101,7 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
             <button
               onClick={() => setQuery('')}
               aria-label="Clear search"
-              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 text-muted hover:text-cream"
+              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 text-muted hover:text-fg"
             >
               <X size={16} />
             </button>
@@ -115,7 +116,7 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
               aria-pressed={category === c}
               className={cx(
                 'shrink-0 rounded-full border px-3.5 py-1.5 text-[13px] font-bold transition',
-                category === c ? 'border-gold bg-gold text-ink' : 'border-line text-muted hover:text-cream',
+                category === c ? 'border-fg bg-fg text-page' : 'border-line bg-surface text-muted hover:text-fg',
               )}
             >
               {c === 'All' ? 'All' : shortCategory(c)}
@@ -131,17 +132,17 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
             <li key={item.id} className="md:border-b md:border-line/60 md:odd:border-r">
               <button
                 onClick={() => open(item.name, item.category, item.price)}
-                className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-ink-3 focus-visible:bg-ink-3 focus-visible:outline-none active:bg-ink-3"
+                className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-field focus-visible:bg-field focus-visible:outline-none active:bg-field"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[15px] font-bold text-cream">{item.name}</p>
+                  <p className="truncate text-[15px] font-bold text-fg">{item.name}</p>
                   <p className="mt-0.5 truncate text-[13px] text-muted">
                     {shortCategory(item.category)}
-                    {item.price && <span className="text-gold/80"> · {item.price}</span>}
+                    {item.price && <span className="text-gold-ink/80"> · {item.price}</span>}
                   </p>
                 </div>
                 {n > 0 ? (
-                  <span className="font-display min-w-10 rounded-full bg-gold/15 px-3 py-1 text-center text-lg italic text-gold tabular-nums">
+                  <span className="font-display min-w-10 rounded-full bg-gold/15 px-3 py-1 text-center text-lg italic text-gold-ink tabular-nums">
                     {formatQty(n)}
                   </span>
                 ) : (
@@ -159,7 +160,7 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
           {query.trim().length > 1 && (
             <button
               onClick={() => open(query.trim(), 'Not in catalog')}
-              className="inline-flex items-center gap-2 rounded-full border border-gold/50 px-4 py-2 text-sm font-bold text-gold hover:bg-gold/10"
+              className="inline-flex items-center gap-2 rounded-full border border-gold/50 px-4 py-2 text-sm font-bold text-gold-ink hover:bg-gold/10"
             >
               <Plus size={16} /> Count “{query.trim()}” anyway
             </button>

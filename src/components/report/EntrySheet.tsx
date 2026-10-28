@@ -44,7 +44,7 @@ function EntryRow({
 
   if (editing) {
     return (
-      <li className="space-y-3 rounded-2xl border border-gold/40 bg-ink-3/60 p-3.5">
+      <li className="space-y-3 rounded-2xl border border-gold/40 bg-field/60 p-3.5">
         <LocationToggle compact value={location} onChange={setLocation} />
         <div className="flex gap-2">
           <input
@@ -70,15 +70,15 @@ function EntryRow({
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-2xl border border-line bg-ink-3/40 py-2.5 pr-2 pl-4">
-      <span className="font-display w-14 text-2xl italic text-cream tabular-nums">{formatQty(entry.qty)}</span>
+    <li className="flex items-center gap-3 rounded-2xl border border-line bg-field/40 py-2.5 pr-2 pl-4">
+      <span className="font-display w-14 text-2xl italic text-fg tabular-nums">{formatQty(entry.qty)}</span>
       <div className="min-w-0 flex-1 text-sm">
-        <p className="font-bold text-cream">{locationLabel(entry.location)}</p>
+        <p className="font-bold text-fg">{locationLabel(entry.location)}</p>
         <p className="text-muted">{formatRelative(entry.timestamp)}</p>
       </div>
       <button
         onClick={() => setEditing(true)}
-        className="rounded-xl px-3 py-2 text-sm font-bold text-gold hover:bg-gold/10"
+        className="rounded-xl px-3 py-2 text-sm font-bold text-gold-ink hover:bg-gold/10"
       >
         Edit
       </button>
@@ -119,9 +119,9 @@ export function EntrySheet({ row, entries, onClose, onUpdate, onRemove }: Props)
               ['Bar', formatQty(row.barQty)],
               ['Value', formatMoney(row.totalValue)],
             ].map(([k, v]) => (
-              <div key={k} className="rounded-2xl border border-line bg-ink-3/40 py-3">
+              <div key={k} className="rounded-2xl border border-line bg-field/40 py-3">
                 <dt className="text-xs text-muted">{k}</dt>
-                <dd className={cx('font-display mt-0.5 text-2xl italic', k === 'Value' ? 'text-gold' : 'text-cream')}>{v}</dd>
+                <dd className={cx('font-display mt-0.5 text-2xl italic', k === 'Value' ? 'text-gold-ink' : 'text-fg')}>{v}</dd>
               </div>
             ))}
           </dl>
