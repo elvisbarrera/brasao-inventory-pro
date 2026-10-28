@@ -55,7 +55,7 @@ function EntryRow({
             value={qty}
             onChange={e => setQty(e.target.value)}
             aria-label="Quantity"
-            className="field font-display flex-1 text-center text-2xl italic"
+            className="field num flex-1 text-center text-2xl font-bold"
             autoFocus
           />
           <Button variant="ghost" onClick={() => setEditing(false)}>
@@ -71,7 +71,7 @@ function EntryRow({
 
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-line bg-field/40 py-2.5 pr-2 pl-4">
-      <span className="font-display w-14 text-2xl italic text-fg tabular-nums">{formatQty(entry.qty)}</span>
+      <span className="num w-14 text-2xl font-black text-fg">{formatQty(entry.qty)}</span>
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-bold text-fg">{locationLabel(entry.location)}</p>
         <p className="text-muted">{formatRelative(entry.timestamp)}</p>
@@ -121,7 +121,7 @@ export function EntrySheet({ row, entries, onClose, onUpdate, onRemove }: Props)
             ].map(([k, v]) => (
               <div key={k} className="rounded-2xl border border-line bg-field/40 py-3">
                 <dt className="text-xs text-muted">{k}</dt>
-                <dd className={cx('font-display mt-0.5 text-2xl italic', k === 'Value' ? 'text-gold-ink' : 'text-fg')}>{v}</dd>
+                <dd className={cx('num mt-0.5 text-xl font-black', k === 'Value' ? 'text-gold-ink' : 'text-fg')}>{v}</dd>
               </div>
             ))}
           </dl>

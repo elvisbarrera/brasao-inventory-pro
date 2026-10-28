@@ -38,6 +38,7 @@
     @apply font-sans text-fg antialiased;
     background-color: #f4f0ee;
     background-image: linear-gradient(180deg, #f4f0ee 0%, #ebe4dc 100%);
+    font-variant-numeric: lining-nums;
     min-height: 100dvh;
     overscroll-behavior-y: none;
   }
@@ -60,6 +61,13 @@
   /* Small gold caps label, as on brasaousa.com cards */
   .eyebrow {
     @apply font-sans text-[11px] font-bold uppercase tracking-[0.14em] text-gold-ink;
+  }
+  /* Numbers: Lato with lining, tabular figures (easy to read and align) */
+  .num {
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-variant-numeric: lining-nums tabular-nums;
+    letter-spacing: -0.02em;
   }
   .card {
     @apply rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(28,27,25,0.04)];
