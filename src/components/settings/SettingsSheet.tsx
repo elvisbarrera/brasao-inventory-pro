@@ -65,7 +65,7 @@ export function SettingsSheet({ open, onClose, status, syncing, pending, lastSyn
   return (
     <Sheet open={open} onClose={onClose} title="Sync & database" subtitle={`Supabase project ${config.projectId}`}>
       <div className="space-y-5 pb-3">
-        <section className="rounded-2xl border border-line bg-ink-3/40 p-4">
+        <section className="rounded-2xl border border-line bg-field/40 p-4">
           <div className="flex items-center gap-2.5">
             <span
               className={cx(
@@ -79,15 +79,15 @@ export function SettingsSheet({ open, onClose, status, syncing, pending, lastSyn
           <dl className="mt-4 grid grid-cols-3 gap-2 text-sm">
             <div>
               <dt className="text-xs text-muted">Waiting to upload</dt>
-              <dd className="font-bold text-cream">{pending}</dd>
+              <dd className="font-bold text-fg">{pending}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Records</dt>
-              <dd className="font-bold text-cream">{totalEntries}</dd>
+              <dd className="font-bold text-fg">{totalEntries}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Last sync</dt>
-              <dd className="font-bold text-cream">{lastSynced ? formatTime(lastSynced) : '—'}</dd>
+              <dd className="font-bold text-fg">{lastSynced ? formatTime(lastSynced) : '—'}</dd>
             </div>
           </dl>
           <div className="mt-4 flex gap-2">
@@ -99,7 +99,7 @@ export function SettingsSheet({ open, onClose, status, syncing, pending, lastSyn
             </Button>
           </div>
           {test && (
-            <p className={cx('mt-3 text-sm', test.state === 'connected' && test.canWrite ? 'text-gold-soft' : 'text-danger')}>
+            <p className={cx('mt-3 text-sm', test.state === 'connected' && test.canWrite ? 'text-gold-ink' : 'text-danger')}>
               {test.state === 'connected'
                 ? test.canWrite
                   ? `Read and write OK · ${test.rowCount} rows in the table`
@@ -114,7 +114,7 @@ export function SettingsSheet({ open, onClose, status, syncing, pending, lastSyn
         <section>
           <button
             onClick={() => setShowSql(s => !s)}
-            className="flex w-full items-center justify-between py-2 text-left font-bold text-cream"
+            className="flex w-full items-center justify-between py-2 text-left font-bold text-fg"
             aria-expanded={showSql}
           >
             Database setup script
@@ -137,7 +137,7 @@ export function SettingsSheet({ open, onClose, status, syncing, pending, lastSyn
         <section className="border-t border-line/70 pt-2">
           <button
             onClick={() => setShowAdvanced(s => !s)}
-            className="flex w-full items-center justify-between py-2 text-left font-bold text-cream"
+            className="flex w-full items-center justify-between py-2 text-left font-bold text-fg"
             aria-expanded={showAdvanced}
           >
             Use a different Supabase project
