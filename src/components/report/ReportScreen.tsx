@@ -82,7 +82,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
 
       <section className="overflow-hidden rounded-2xl bg-night p-5 text-[#f4f0ee] md:p-7">
         <p className="text-sm text-[#c9bfb0]">Inventory value at menu price</p>
-        <p className="num mt-2 text-5xl leading-none font-black text-gold md:text-6xl">{formatMoney(totals.value)}</p>
+        <p className="num mt-2 text-5xl leading-none font-semibold text-gold md:text-6xl">{formatMoney(totals.value)}</p>
         <dl className="mt-6 grid grid-cols-3 gap-3 border-t border-white/10 pt-4">
           {[
             ['Bottles in cellar', formatQty(totals.cellar)],
@@ -91,7 +91,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
           ].map(([k, v]) => (
             <div key={k}>
               <dt className="text-xs text-[#c9bfb0]">{k}</dt>
-              <dd className="num mt-1 text-2xl font-black text-[#f4f0ee]">{v}</dd>
+              <dd className="num mt-1 text-2xl font-semibold text-[#f4f0ee]">{v}</dd>
             </div>
           ))}
         </dl>
@@ -176,7 +176,7 @@ export function ReportScreen({ entries, canClear, onUpdate, onRemove, onClearAll
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="num text-lg font-black text-fg">{formatQty(r.totalQty)}</p>
+                      <p className="num text-lg font-semibold text-fg">{formatQty(r.totalQty)}</p>
                       <p className="text-[13px] text-gold-ink/90">{formatMoney(r.totalValue)}</p>
                     </div>
                     <ChevronRight size={18} className="shrink-0 text-muted" />

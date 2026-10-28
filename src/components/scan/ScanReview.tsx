@@ -126,7 +126,7 @@ export function ScanReview({ items: initial, preview, onClose, onConfirm }: Prop
                       value={formatQty(it.qty)}
                       onChange={e => update(it.key, { qty: Math.max(0, parseFloat(e.target.value) || 0) })}
                       aria-label="Quantity"
-                      className="field num w-24 py-2 text-center text-xl font-bold"
+                      className="field num w-24 py-2 text-center text-xl font-medium"
                     />
                   </div>
                 </div>

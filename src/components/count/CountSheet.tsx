@@ -38,7 +38,7 @@ function Stepper({ value, onChange, label }: { value: number; onChange: (v: numb
         value={value}
         onChange={e => onChange(Math.max(0, parseInt(e.target.value.replace(/\D/g, ''), 10) || 0))}
         onFocus={e => e.target.select()}
-        className="num w-full min-w-0 bg-transparent text-center text-7xl leading-none font-black text-fg outline-none"
+        className="num w-full min-w-0 bg-transparent text-center text-7xl leading-none font-semibold text-fg outline-none"
       />
       <button
         onClick={() => onChange(value + 1)}

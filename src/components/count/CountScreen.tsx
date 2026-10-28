@@ -142,7 +142,7 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
                   </p>
                 </div>
                 {n > 0 ? (
-                  <span className="num min-w-10 rounded-full bg-gold/15 px-3 py-1 text-center text-base font-bold text-gold-ink">
+                  <span className="num min-w-10 rounded-full bg-gold/15 px-3 py-1 text-center text-base font-medium text-gold-ink">
                     {formatQty(n)}
                   </span>
                 ) : (
