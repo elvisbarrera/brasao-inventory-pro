@@ -3,7 +3,7 @@ import { AlertTriangle, Check } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { Button } from '@/components/ui/Button';
 import { LocationToggle } from '@/components/ui/LocationToggle';
-import { MASTER_WINE_LIST } from '@/data/catalog';
+import { ACTIVE_CATALOG } from '@/data/catalog';
 import { matchCatalog, locationFor, type ScanItem } from '@/services/scan';
 import { LocationType, type NewEntry } from '@/types';
 import { cx, formatQty } from '@/lib/format';
@@ -67,7 +67,7 @@ export function ScanReview({ items: initial, preview, onClose, onConfirm }: Prop
       }
     >
       <datalist id="catalog-names">
-        {MASTER_WINE_LIST.map(i => (
+        {ACTIVE_CATALOG.map(i => (
           <option key={i.id} value={i.name} />
         ))}
       </datalist>

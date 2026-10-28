@@ -1,14 +1,15 @@
-import { bottleValue, findCatalogItem, isLiquorCategory, priceNumber } from '@/data/catalog';
+import { bottleValue, canonicalName, findCatalogItem, isLiquorCategory, priceNumber } from '@/data/catalog';
 import { LocationType, type InventoryEntry, type ReportRow } from '@/types';
 
 export function buildReport(entries: InventoryEntry[]): ReportRow[] {
   const rows = new Map<string, ReportRow>();
   for (const e of entries) {
     const item = findCatalogItem(e.itemName);
+    const name = canonicalName(e.itemName);
     const row =
-      rows.get(e.itemName) ??
+      rows.get(name) ??
       ({
-        name: e.itemName,
+        name,
         category: item?.category ?? 'Uncategorized',
         isLiquor: item ? isLiquorCategory(item.category) : false,
         unitPrice: priceNumber(item),
@@ -23,7 +24,7 @@ export function buildReport(entries: InventoryEntry[]): ReportRow[] {
     row.totalQty = round(row.cellarQty + row.barQty);
     row.totalValue = bottleValue(item) * row.totalQty;
     row.lastCounted = Math.max(row.lastCounted, e.timestamp);
-    rows.set(e.itemName, row);
+    rows.set(name, row);
   }
   return [...rows.values()].sort((a, b) => a.name.localeCompare(b.name));
 }

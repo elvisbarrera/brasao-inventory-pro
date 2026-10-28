@@ -1,6 +1,6 @@
 import { useMemo, useState, useDeferredValue } from 'react';
 import { Plus, Search, X } from 'lucide-react';
-import { MASTER_WINE_LIST, isLiquorCategory, shortCategory } from '@/data/catalog';
+import { ACTIVE_CATALOG, canonicalName, isLiquorCategory, shortCategory } from '@/data/catalog';
 import { LocationToggle } from '@/components/ui/LocationToggle';
 import { CountSheet, type CountTarget } from './CountSheet';
 import { useToast } from '@/components/ui/Toast';
@@ -24,7 +24,7 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
   const isBar = location === LocationType.BAR;
 
   const list = useMemo(
-    () => MASTER_WINE_LIST.filter(i => isLiquorCategory(i.category) === isBar),
+    () => ACTIVE_CATALOG.filter(i => isLiquorCategory(i.category) === isBar),
     [isBar],
   );
 
@@ -37,7 +37,11 @@ export function CountScreen({ entries, location, onLocation, onAdd }: Props) {
   // Running total per product at this location
   const counted = useMemo(() => {
     const m = new Map<string, number>();
-    entries.forEach(e => e.location === location && m.set(e.itemName, (m.get(e.itemName) ?? 0) + e.qty));
+    entries.forEach(e => {
+      if (e.location !== location) return;
+      const name = canonicalName(e.itemName);
+      m.set(name, (m.get(name) ?? 0) + e.qty);
+    });
     return m;
   }, [entries, location]);
 
