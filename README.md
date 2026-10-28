@@ -1,93 +1,65 @@
-# Brasão Inventory Pro 🍷🍾
+# Brasão Inventory Pro
 
-A mobile-first inventory management application for wine bars and restaurants, featuring dedicated counting workflows for cellar and bar service areas, AI-powered handwritten sheet scanning, CSV reporting, and live Supabase PostgreSQL synchronization.
+Cellar and bar inventory app for Brasão Brazilian Steakhouse. Mobile and iPad first, works offline, syncs live through Supabase, and reads count sheets or bottle photos with AI.
 
----
+Live: https://brasao-inventory-pro.netlify.app (Netlify, deploys from `main`).
 
-## 🚀 Features
+## Features
 
-- **Cellar Counting Mode**: Fast `+1 / -1` increments for whole wine and champagne bottle counts.
-- **Bar Service Mode**: Fractional `0.25 / 0.5 / 0.75 / Full / Empty` quick-level controls for open liquor bottles.
-- **Master Catalog**: Integrated lookup with search across hundreds of wines, champagnes, and bar spirits with standard pour multiplier value calculation.
-- **Real-Time Supabase Cloud Sync**: Instant live multi-device inventory updates powered by Supabase PostgreSQL and Realtime replication.
-- **Offline-safe counting**: every count is saved on the device first and queued. Pending items upload automatically when the signal comes back (on reconnect, when the app is reopened, and every 20s). Nothing local is discarded until Supabase confirms it. The header pill shows `· N sin subir` while items are pending.
-- **Audit Log & In-Place Editing**: Quick inline editing, quantity adjustments, and deletion with instant timestamps.
-- **Reports & Financial Valuation**: Summary metrics, category progress bars, and one-click detailed CSV exports.
-- **AI photo scan**: take a photo of a handwritten/printed count sheet **or of the bottles themselves**. Gemini reads the sheet or recognizes labels, counts bottles (and estimates fill level of open liquor bottles to 0.25), matches everything to the catalog, and picks Cellar vs Bar from the category. You review/fix the list, then one tap adds it to Supabase.
+- **Count**: pick Cellar or Bar, search the catalog (433 products) or filter by category, tap a product, set the quantity. Cellar uses whole bottles (with +6 / +12 case shortcuts). Bar uses sealed bottles plus the fill level of the open bottle in quarters.
+- **Scan**: one button opens the camera or photo library. The photo can be a handwritten/printed count sheet or the bottles themselves. Gemini reads it, matches each product to the catalog, picks Cellar or Bar from the category, and shows a review list before anything is saved.
+- **Report**: inventory value at menu price (spirits = price per pour × 25 pours), bottles per location, grouped by category. Tap a product to edit or delete individual counts. Export CSV.
+- **Offline-safe sync**: every change is saved on the device first and queued. The queue uploads on reconnect, when the app is reopened, and every 20s. Nothing local is dropped until Supabase confirms it. The header shows the sync state and how many changes are waiting.
 
----
+## Project structure
 
-## 🛠️ Quick Start
+```
+src/
+  main.tsx, App.tsx          app shell (tabs, sheets, toasts)
+  index.css                  Tailwind v4 + Brasão theme tokens (colors, fonts)
+  types.ts                   shared types
+  data/catalog.ts            product catalog + price helpers
+  lib/
+    supabase.ts              client, connection test, SQL setup script
+    report.ts                report math + CSV export
+    format.ts                money/qty/time formatting
+  services/
+    inventoryApi.ts          Supabase reads/writes (upsert, delete)
+    localStore.ts            device storage + pending sync queue
+    scan.ts                  photo compression, AI call, catalog matching
+  hooks/useInventory.ts      offline-first sync engine (single source of truth)
+  components/
+    layout/                  Header, BottomNav
+    count/                   CountScreen, CountSheet, BottleLevel
+    scan/                    useScanner, ScanReview
+    report/                  ReportScreen, EntrySheet
+    settings/                SettingsSheet (sync status, SQL setup, custom project)
+    ui/                      Sheet, Button, Toast, LocationToggle
+netlify/functions/scan-inventory.mts   Gemini proxy (keeps the API key server-side)
+supabase/schema.sql                    database setup
+```
 
-### 1. Install Dependencies
+## Development
+
 ```bash
-npm install
+bun install          # or npm install
+bun run dev          # http://localhost:3000 (no scanner: functions don't run here)
+npx netlify dev      # full app including /api/scan-inventory
+bun run build
 ```
 
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env.local` and configure your credentials:
-```bash
-cp .env.example .env.local
-```
+Type checking runs in strict mode: `npx tsc --noEmit`.
 
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-supabase-publishable-or-anon-key
-```
+## Configuration
 
-### AI scan (Gemini) — Netlify environment variable
-The photo scanner runs in a Netlify Function (`netlify/functions/scan-inventory.mts`, served at `/api/scan-inventory`) so the Gemini key **never reaches the browser**.
+| Where | Variable | Purpose |
+| --- | --- | --- |
+| Netlify env (scope: Functions) | `GEMINI_API_KEY` | Required for photo scanning. Create at https://aistudio.google.com/apikey |
+| Netlify env (optional) | `GEMINI_MODEL` | Force a model. Default tries `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash` |
+| Build env (optional) | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Use a different Supabase project. Defaults to the Brasão project |
 
-1. Create a key at https://aistudio.google.com/apikey
-2. Netlify → *Site configuration → Environment variables* → add `GEMINI_API_KEY` (scope must include **Functions**).
-3. Optional: `GEMINI_MODEL` to force a specific model. Otherwise it tries `gemini-3.5-flash`, then `gemini-3-flash-preview`, then `gemini-2.5-flash`.
-4. Redeploy.
+## Database
 
-To test the scanner locally use `npx netlify dev` (plain `npm run dev` does not run functions).
+Run `supabase/schema.sql` once in Supabase → SQL Editor (also available from Settings → Database setup script in the app).
 
-### 3. Run Development Server
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
----
-
-## 🗄️ Database Setup (Supabase)
-
-To initialize your Supabase PostgreSQL database:
-
-1. Open your [Supabase Dashboard](https://supabase.com/dashboard) and navigate to **SQL Editor**.
-2. Click **New query** and paste the content of [`supabase-schema.sql`](./supabase-schema.sql):
-
-```sql
-CREATE TABLE IF NOT EXISTS public.inventory (
-    id TEXT PRIMARY KEY,
-    timestamp BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
-    "itemName" TEXT NOT NULL,
-    itemname TEXT GENERATED ALWAYS AS ("itemName") STORED,
-    location TEXT NOT NULL CHECK (location IN ('Cellar', 'Bar')),
-    qty NUMERIC NOT NULL DEFAULT 0,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
-);
-
-ALTER TABLE public.inventory ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow public read access" ON public.inventory FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public insert access" ON public.inventory FOR INSERT TO public WITH CHECK (true);
-CREATE POLICY "Allow public update access" ON public.inventory FOR UPDATE TO public USING (true);
-CREATE POLICY "Allow public delete access" ON public.inventory FOR DELETE TO public USING (true);
-
-ALTER PUBLICATION supabase_realtime ADD TABLE public.inventory;
-```
-
-3. Click **Run** (`Ctrl+Enter` or `Cmd+Enter`).
-
----
-
-## 📱 Tech Stack
-- **Framework**: React 19 + TypeScript + Vite
-- **Database & Realtime**: [Supabase](https://supabase.com) (`@supabase/supabase-js`)
-- **Icons**: [Lucide React](https://lucide.dev)
-- **Styling**: Tailwind CSS
+Note: the table currently allows anonymous read/write/delete. Anyone with the link can change the inventory. Add a login or PIN before sharing the link widely.

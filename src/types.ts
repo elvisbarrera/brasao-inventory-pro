@@ -1,7 +1,6 @@
-
 export enum LocationType {
   CELLAR = 'Cellar',
-  BAR = 'Bar'
+  BAR = 'Bar',
 }
 
 export interface InventoryEntry {
@@ -12,6 +11,9 @@ export interface InventoryEntry {
   qty: number;
 }
 
+/** What the UI provides when counting; id/timestamp are assigned on save. */
+export type NewEntry = Omit<InventoryEntry, 'id' | 'timestamp'>;
+
 export interface WineItem {
   id: string;
   name: string;
@@ -19,12 +21,14 @@ export interface WineItem {
   price?: string;
 }
 
-export interface GroupedReport {
+export interface ReportRow {
   name: string;
   category: string;
-  price: number;
+  isLiquor: boolean;
+  unitPrice: number;
   cellarQty: number;
   barQty: number;
   totalQty: number;
   totalValue: number;
+  lastCounted: number;
 }

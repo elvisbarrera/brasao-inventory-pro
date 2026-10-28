@@ -63,7 +63,7 @@ export default async (req: Request, _context: Context) => {
   const apiKey = Netlify.env.get("GEMINI_API_KEY");
   if (!apiKey) {
     return json(
-      { error: "Falta GEMINI_API_KEY en Netlify (Site configuration → Environment variables, scope Functions)." },
+      { error: "GEMINI_API_KEY is not set in Netlify (Project configuration → Environment variables, scope Functions)." },
       500
     );
   }
@@ -77,7 +77,7 @@ export default async (req: Request, _context: Context) => {
 
   const { image, mimeType = "image/jpeg", catalog = [] } = body;
   if (!image || typeof image !== "string") return json({ error: "Missing image" }, 400);
-  if (image.length > 5_500_000) return json({ error: "Imagen demasiado grande" }, 413);
+  if (image.length > 5_500_000) return json({ error: "Image too large" }, 413);
   if (!Array.isArray(catalog) || catalog.length > 3000) return json({ error: "Invalid catalog" }, 400);
 
   const envModel = Netlify.env.get("GEMINI_MODEL");
@@ -130,7 +130,7 @@ export default async (req: Request, _context: Context) => {
       const items = Array.isArray(parsed) ? parsed : parsed.items;
       return json({ items: Array.isArray(items) ? items : [], model });
     } catch {
-      lastError = "La IA devolvió una respuesta inválida";
+      lastError = "The AI returned an invalid response";
     }
   }
 

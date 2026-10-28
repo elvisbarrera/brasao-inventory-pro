@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+/* Self-hosted fonts (work offline in the cellar) */
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/400-italic.css";
+@import "@fontsource/playfair-display/600-italic.css";
+@import "@fontsource/lato/400.css";
+@import "@fontsource/lato/700.css";
+@import "@fontsource/lato/900.css";
+
+/* Brasão brand tokens */
+@theme {
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-sans: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --color-ink: #141210;        /* warm near-black background */
+  --color-ink-2: #1c1915;      /* raised surface */
+  --color-ink-3: #26221c;      /* card / input */
+  --color-line: #3a342b;       /* hairlines */
+  --color-cream: #f5efe4;      /* primary text */
+  --color-muted: #a99f8f;      /* secondary text */
+  --color-gold: #c9a96e;       /* accent */
+  --color-gold-soft: #e2cc9f;
+  --color-gold-deep: #9c7f48;
+  --color-emerald: #0d2318;
+  --color-emerald-bright: #4fb286;
+  --color-wine: #7a2232;
+  --color-danger: #e0675f;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-ink font-sans text-cream antialiased;
+    min-height: 100dvh;
+    overscroll-behavior-y: none;
+  }
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea, button {
+    font-size: 16px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-gold) 40%, transparent);
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@layer components {
+  /* Small caps label used across the app (brand: Lato caps) */
+  .eyebrow {
+    @apply font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-muted;
+  }
+  .card {
+    @apply rounded-2xl border border-line/70 bg-ink-2;
+  }
+  .field {
+    @apply w-full rounded-xl border border-line bg-ink-3 px-4 py-3 text-cream placeholder:text-muted/70
+      outline-none transition focus:border-gold/70 focus:ring-2 focus:ring-gold/20;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Double-diamond trellis used on brasaousa.com section dividers */
+  .trellis {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='none' stroke='%23c9a96e' stroke-opacity='.10'%3E%3Cpath d='M14 2 26 14 14 26 2 14Z'/%3E%3Cpath d='M14 8 20 14 14 20 8 14Z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+@utility pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-rise { animation: rise 0.28s ease-out both; }
+.animate-sheet { animation: sheet-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.animate-fade { animation: fade 0.2s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise, .animate-sheet, .animate-fade { animation: none; }
+}
+
+/* Hide the "Powered by Netlify" badge if Netlify ever injects it */
+#nl-badge-frame,
+iframe[id^="nl-badge"] {
+  display: none !important;
+}

@@ -1,5 +1,5 @@
-import { MASTER_WINE_LIST } from '../constants.tsx';
-import { LocationType, WineItem } from '../types.ts';
+import { MASTER_WINE_LIST, isLiquorCategory } from '@/data/catalog';
+import { LocationType, type WineItem } from '@/types';
 
 export interface ScanItem {
   key: string;
@@ -22,7 +22,7 @@ export async function compressImage(file: File): Promise<{ base64: string; mimeT
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
       const el = new Image();
       el.onload = () => resolve(el);
-      el.onerror = () => reject(new Error('No se pudo leer la imagen. Intenta tomar la foto otra vez.'));
+      el.onerror = () => reject(new Error('Could not read the image. Try taking the photo again.'));
       el.src = url;
     });
     const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
@@ -32,7 +32,7 @@ export async function compressImage(file: File): Promise<{ base64: string; mimeT
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas no disponible');
+    if (!ctx) throw new Error('Canvas not available');
     ctx.drawImage(img, 0, 0, w, h);
     const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
     return { base64: dataUrl.split(',')[1], mimeType: 'image/jpeg' };
@@ -85,7 +85,7 @@ export function matchCatalog(name: string): WineItem | null {
 }
 
 export const locationFor = (item: WineItem | null, fallback: LocationType): LocationType =>
-  item ? (item.category.startsWith('Liquor') ? LocationType.BAR : LocationType.CELLAR) : fallback;
+  item ? (isLiquorCategory(item.category) ? LocationType.BAR : LocationType.CELLAR) : fallback;
 
 // ---------- Scan ----------
 
@@ -101,13 +101,13 @@ export async function scanInventoryPhoto(file: File, fallbackLocation: LocationT
       body: JSON.stringify({ image: base64, mimeType, catalog }),
     });
   } catch {
-    throw new Error('Sin conexión. El escaneo necesita internet.');
+    throw new Error('No connection. Scanning needs internet.');
   }
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    if (res.status === 404) throw new Error('El servicio de escaneo no está publicado todavía (función de Netlify).');
-    throw new Error(data?.error || `Error del escáner (${res.status})`);
+    if (res.status === 404) throw new Error('The scan service is not deployed yet (Netlify function).');
+    throw new Error(data?.error || `Scanner error (${res.status})`);
   }
 
   const raw: any[] = Array.isArray(data.items) ? data.items : [];
@@ -123,10 +123,10 @@ export async function scanInventoryPhoto(file: File, fallbackLocation: LocationT
         matched: Boolean(item),
         qty: Number.isFinite(qty) ? qty : 0,
         location: locationFor(item, fallbackLocation),
-        kind: r.kind === 'bottle' ? 'bottle' : 'sheet',
+        kind: r.kind === 'bottle' ? ('bottle' as const) : ('sheet' as const),
         confidence: Number(r.confidence) || 0,
         selected: Boolean(item) && qty > 0,
-      } as ScanItem;
+      } satisfies ScanItem;
     })
     .filter(i => i.rawName || i.itemName);
 }
