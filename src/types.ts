@@ -18,7 +18,12 @@ export interface WineItem {
   id: string;
   name: string;
   category: string;
+  /** Wine: per bottle. Spirits: per pour. Missing when the menu shows no price. */
   price?: string;
+  /** No longer on the menu: hidden from counting, still resolves for old counts. */
+  retired?: boolean;
+  /** Previous names of this product (renumbered bin, fixed typo). */
+  aka?: string[];
 }
 
 export interface ReportRow {

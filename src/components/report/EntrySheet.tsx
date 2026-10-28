@@ -4,6 +4,7 @@ import { Sheet } from '@/components/ui/Sheet';
 import { Button } from '@/components/ui/Button';
 import { LocationToggle, locationLabel } from '@/components/ui/LocationToggle';
 import { useToast } from '@/components/ui/Toast';
+import { canonicalName } from '@/data/catalog';
 import { LocationType, type InventoryEntry, type NewEntry, type ReportRow } from '@/types';
 import { cx, formatMoney, formatQty, formatRelative } from '@/lib/format';
 
@@ -97,7 +98,7 @@ function EntryRow({
 }
 
 export function EntrySheet({ row, entries, onClose, onUpdate, onRemove }: Props) {
-  const list = row ? entries.filter(e => e.itemName === row.name).sort((a, b) => b.timestamp - a.timestamp) : [];
+  const list = row ? entries.filter(e => canonicalName(e.itemName) === row.name).sort((a, b) => b.timestamp - a.timestamp) : [];
 
   // Close automatically when the last entry is deleted
   useEffect(() => {

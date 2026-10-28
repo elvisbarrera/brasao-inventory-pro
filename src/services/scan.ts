@@ -1,4 +1,4 @@
-import { MASTER_WINE_LIST, isLiquorCategory } from '@/data/catalog';
+import { ACTIVE_CATALOG, isLiquorCategory } from '@/data/catalog';
 import { LocationType, type WineItem } from '@/types';
 
 export interface ScanItem {
@@ -54,7 +54,7 @@ const normalize = (s: string) =>
 
 const tokens = (s: string) => new Set(normalize(s).split(' ').filter(t => t.length > 1));
 
-const byExactName = new Map(MASTER_WINE_LIST.map(i => [normalize(i.name), i]));
+const byExactName = new Map(ACTIVE_CATALOG.map(i => [normalize(i.name), i]));
 
 export function matchCatalog(name: string): WineItem | null {
   if (!name) return null;
@@ -65,7 +65,7 @@ export function matchCatalog(name: string): WineItem | null {
   // Bin number ("1207 ...") is the most reliable key on wine sheets
   const bin = n.match(/^(\d{3,5})\b/)?.[1];
   if (bin) {
-    const hit = MASTER_WINE_LIST.filter(i => normalize(i.name).startsWith(bin + ' '));
+    const hit = ACTIVE_CATALOG.filter(i => normalize(i.name).startsWith(bin + ' '));
     if (hit.length === 1) return hit[0];
   }
 
@@ -74,7 +74,7 @@ export function matchCatalog(name: string): WineItem | null {
   if (a.size === 0) return null;
   let best: WineItem | null = null;
   let bestScore = 0;
-  for (const item of MASTER_WINE_LIST) {
+  for (const item of ACTIVE_CATALOG) {
     const b = tokens(item.name);
     let inter = 0;
     a.forEach(t => { if (b.has(t)) inter++; });
@@ -91,7 +91,7 @@ export const locationFor = (item: WineItem | null, fallback: LocationType): Loca
 
 export async function scanInventoryPhoto(file: File, fallbackLocation: LocationType): Promise<ScanItem[]> {
   const { base64, mimeType } = await compressImage(file);
-  const catalog = MASTER_WINE_LIST.map(i => `${i.name} | ${i.category}`);
+  const catalog = ACTIVE_CATALOG.map(i => `${i.name} | ${i.category}`);
 
   let res: Response;
   try {
