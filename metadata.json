@@ -1,0 +1,8 @@
+{
+  "name": "Brasão Inventory Pro",
+  "description": "A mobile-first inventory management application for wine bars with dedicated counting modes for cellar and bar service areas, featuring AI-powered OCR for handwritten sheets.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}
