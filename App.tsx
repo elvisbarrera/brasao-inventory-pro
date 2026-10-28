@@ -21,8 +21,14 @@ type SupabaseStatus = 'connected' | 'missing_table' | 'offline' | 'checking';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'count' | 'report'>('count');
-  const [entries, setEntries] = useState<InventoryEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entries, setEntries] = useState<InventoryEntry[]>(() => {
+    try {
+      return storageService.getEntries() || [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
@@ -35,7 +41,11 @@ const App: React.FC = () => {
       setError(null);
       setSupabaseStatus('checking');
 
-      const testRes = await testSupabaseConnection();
+      const timeoutPromise = new Promise<{ connected: boolean; tableExists: boolean; canRead: boolean; canWrite: boolean }>((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timeout')), 3500)
+      );
+
+      const testRes = await Promise.race([testSupabaseConnection(), timeoutPromise]);
 
       if (testRes.connected && testRes.tableExists) {
         const data = await supabaseService.fetchEntries();
@@ -407,7 +417,7 @@ const App: React.FC = () => {
         )}
 
         {/* Dynamic Tab Body */}
-        {loading ? (
+        {loading && entries.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-28 text-slate-300">
             <div className="relative">
               <Loader2 className="animate-spin text-amber-600" size={44} />
