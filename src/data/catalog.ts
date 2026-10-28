@@ -1,5 +1,5 @@
 
-import { WineItem } from './types';
+import type { WineItem } from '../types';
 
 export const MASTER_WINE_LIST: WineItem[] = [
   // WINE - Half Bottles
@@ -483,3 +483,24 @@ export const MASTER_WINE_LIST: WineItem[] = [
   { id: 'l_ama_7', name: "Montenegro", category: "Liquor - Amaro", price: "$10.00" },
   { id: 'l_ama_8', name: "Straga", category: "Liquor - Amaro", price: "$10.00" }
 ];
+
+// ---------- Catalog helpers ----------
+
+/** Liquor prices in the catalog are per pour; a bottle is ~25 pours. */
+export const POURS_PER_BOTTLE = 25;
+
+export const isLiquorCategory = (category: string) => category.startsWith('Liquor');
+
+/** "Liquor - Bourbon/Whiskey" -> "Bourbon/Whiskey" */
+export const shortCategory = (category: string) => category.replace(/^Liquor\s*-\s*/, '');
+
+const byName = new Map(MASTER_WINE_LIST.map(item => [item.name.toLowerCase(), item]));
+
+export const findCatalogItem = (name: string): WineItem | undefined => byName.get(name.trim().toLowerCase());
+
+export const priceNumber = (item?: WineItem): number =>
+  item?.price ? parseFloat(item.price.replace(/[^0-9.]/g, '')) || 0 : 0;
+
+/** Value of one full bottle at menu price. */
+export const bottleValue = (item?: WineItem): number =>
+  priceNumber(item) * (item && isLiquorCategory(item.category) ? POURS_PER_BOTTLE : 1);
