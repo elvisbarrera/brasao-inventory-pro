@@ -14,6 +14,7 @@ dist-ssr
 # Environment variables & secrets
 .env
 .env.*
+!.env.example
 *.local
 credentials.json
 app.py
