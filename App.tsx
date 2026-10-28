@@ -10,14 +10,9 @@ import { SupabaseModal } from './components/SupabaseModal.tsx';
 import { 
   ClipboardList, 
   BarChart3, 
-  Wine,
-  Cloud,
-  Loader2,
-  RefreshCcw,
-  Zap,
-  CheckCircle2,
+  Loader2, 
+  RefreshCcw, 
   Database,
-  AlertTriangle,
   ArrowRight,
   HardDrive
 } from 'lucide-react';
@@ -40,7 +35,6 @@ const App: React.FC = () => {
       setError(null);
       setSupabaseStatus('checking');
 
-      // Check table status
       const testRes = await testSupabaseConnection();
 
       if (testRes.connected && testRes.tableExists) {
@@ -50,12 +44,10 @@ const App: React.FC = () => {
         setSupabaseStatus('connected');
         setLastSynced(new Date());
       } else if (testRes.connected && !testRes.tableExists) {
-        // Table does not exist in Supabase yet
         setSupabaseStatus('missing_table');
         const localData = storageService.getEntries();
         setEntries(localData);
       } else {
-        // Supabase network unreachable
         setSupabaseStatus('offline');
         const localData = storageService.getEntries();
         setEntries(localData);
@@ -67,7 +59,6 @@ const App: React.FC = () => {
       } else {
         setSupabaseStatus('offline');
       }
-      // Fallback to local storage
       const localData = storageService.getEntries();
       setEntries(localData);
     } finally {
@@ -75,7 +66,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Set up Supabase Realtime subscription
   useEffect(() => {
     loadData();
 
@@ -177,13 +167,11 @@ const App: React.FC = () => {
         setLastSynced(new Date());
       } catch (err: any) {
         console.error("Cloud sync failed, keeping in local storage:", err.message);
-        // Keep in local storage even if cloud temporary fails
-        setError("Saved to local storage. Cloud error: " + err.message);
+        setError("Guardado en local. Error en nube: " + err.message);
       } finally {
         setIsSyncing(false);
       }
     } else {
-      // Local fallback mode
       setEntries(prev => {
         const next = [newEntry, ...prev];
         storageService.saveEntries(next);
@@ -240,7 +228,7 @@ const App: React.FC = () => {
   };
 
   const clearInventory = async () => {
-    if (window.confirm("WARNING: This will delete all inventory records. Proceed?")) {
+    if (window.confirm("¿Seguro que deseas eliminar todos los registros de inventario?")) {
       try {
         setIsSyncing(true);
         setEntries([]);
@@ -295,141 +283,138 @@ const App: React.FC = () => {
   }, [entries]);
 
   return (
-    <div className="flex flex-col min-h-screen pb-20 bg-slate-50">
-      {/* Header */}
-      <header className="bg-slate-900 text-white p-4 sticky top-0 z-40 shadow-lg border-b border-slate-800">
-        <div className="max-w-lg mx-auto w-full flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <Wine size={18} />
-            </div>
-            <div>
-              <h1 className="text-base font-bold tracking-tight leading-none text-white">Brasão Inventory Pro</h1>
-              {lastSynced ? (
-                <p className="text-[9px] text-slate-400 mt-0.5 font-medium">
-                  Synced: {lastSynced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                </p>
-              ) : (
-                <p className="text-[9px] text-slate-400 mt-0.5 font-medium">
-                  Wine & Bar Management
+    <div className="flex flex-col min-h-screen bg-[#f8f9fb] text-slate-800 antialiased">
+      {/* Luxury Brasão Navigation Header */}
+      <header className="bg-[#0b0e14] text-white sticky top-0 z-40 shadow-xl border-b border-amber-500/20 backdrop-blur-md">
+        <div className="max-w-lg md:max-w-4xl lg:max-w-6xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+          {/* Logo & Brand Identity */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <img 
+              src="/brasao-logo.png" 
+              alt="Brasão" 
+              className="h-7 sm:h-8 md:h-9 w-auto object-contain brightness-0 invert drop-shadow-[0_2px_10px_rgba(212,175,55,0.35)] shrink-0"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://images.squarespace-cdn.com/content/v1/60a7361067fec93537b3c527/5ced286e-5920-45e7-baee-ee8e1f6b55db/Brasa%CC%83o-LOGO-2024-Website-nopadding.png?format=500w";
+              }}
+            />
+            <div className="border-l border-slate-700/70 pl-2.5 sm:pl-3 flex flex-col justify-center min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[12px] sm:text-[14px] font-bold tracking-wider text-amber-200/95 font-cinzel truncate">
+                  INVENTORY PRO
+                </span>
+                <span className="hidden sm:inline-block text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded">
+                  Wine & Bar
+                </span>
+              </div>
+              {lastSynced && (
+                <p className="text-[8px] sm:text-[9px] text-slate-400 font-medium truncate">
+                  Sincronizado: {lastSynced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               )}
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            {/* Supabase Status Chip / Modal Trigger */}
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${
-                supabaseStatus === 'connected'
-                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25'
-                  : supabaseStatus === 'missing_table'
-                  ? 'bg-amber-500/20 border-amber-500/50 text-amber-200 animate-pulse hover:bg-amber-500/30'
-                  : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-              }`}
-              title="Click to view Supabase database connection and SQL setup"
-            >
-              {supabaseStatus === 'connected' ? (
-                <>
-                  <CheckCircle2 size={12} className="text-emerald-400" />
-                  <span>Supabase Live</span>
-                </>
-              ) : supabaseStatus === 'missing_table' ? (
-                <>
-                  <AlertTriangle size={12} className="text-amber-400" />
-                  <span>Setup DB</span>
-                </>
-              ) : (
-                <>
-                  <Database size={12} className="text-slate-400" />
-                  <span>Local Mode</span>
-                </>
-              )}
-            </button>
-
-            {isSyncing ? (
-              <div className="flex items-center gap-1 px-2 py-1 bg-indigo-500/20 border border-indigo-500/40 rounded-full animate-pulse">
-                <RefreshCcw size={10} className="text-indigo-300 animate-spin" />
-              </div>
-            ) : supabaseStatus === 'connected' && (
-              <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-indigo-600/30 border border-indigo-400/40 rounded-full">
-                <Zap size={10} className="text-indigo-400 fill-indigo-400" />
-                <span className="text-[8px] font-bold uppercase text-indigo-200">Realtime</span>
+          {/* Controls: Compact Live Pill & Status */}
+          <div className="flex items-center gap-2 shrink-0">
+            {isSyncing && (
+              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-full">
+                <RefreshCcw size={10} className="text-amber-400 animate-spin" />
               </div>
             )}
+
+            {/* Smaller Supabase Status Pill as requested */}
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] sm:text-[10px] font-semibold tracking-wide transition-all active:scale-95 shadow-sm ${
+                supabaseStatus === 'connected'
+                  ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/60'
+                  : supabaseStatus === 'missing_table'
+                  ? 'bg-amber-950/60 border-amber-500/40 text-amber-300 hover:bg-amber-900/60'
+                  : 'bg-slate-800/90 border-slate-700 text-slate-300 hover:bg-slate-700'
+              }`}
+              title="Configuración de base de datos Supabase"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                supabaseStatus === 'connected' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse' :
+                supabaseStatus === 'missing_table' ? 'bg-amber-400 animate-pulse' : 'bg-slate-400'
+              }`} />
+              <span className="font-bold">
+                {supabaseStatus === 'connected' ? 'Live' : supabaseStatus === 'missing_table' ? 'Setup DB' : 'Local'}
+              </span>
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="flex-1 px-4 pt-4 pb-6 max-w-lg mx-auto w-full">
-        {/* Missing Table / Setup Callout */}
+      {/* Main Responsive Container */}
+      <main className="flex-1 px-3 sm:px-4 md:px-8 pt-3 sm:pt-4 md:pt-6 pb-24 sm:pb-28 max-w-lg md:max-w-4xl lg:max-w-6xl mx-auto w-full transition-all">
+        {/* Missing Table Warning */}
         {supabaseStatus === 'missing_table' && (
-          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm text-amber-950 space-y-2.5 animate-in fade-in">
-            <div className="flex items-start justify-between gap-2">
+          <div className="mb-4 p-3.5 sm:p-4 bg-amber-50/90 border border-amber-300 rounded-2xl shadow-sm text-amber-950 space-y-2 animate-in fade-in">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-amber-100 rounded-lg text-amber-700">
+                <div className="p-1.5 bg-amber-200/60 rounded-lg text-amber-800">
                   <Database size={16} />
                 </div>
                 <h3 className="font-bold text-xs uppercase tracking-wider text-amber-900">
-                  Supabase Table Setup Required
+                  Configuración de tabla requerida en Supabase
                 </h3>
               </div>
-              <span className="text-[10px] bg-amber-200/60 font-bold px-2 py-0.5 rounded-full text-amber-800">
-                Action Needed
+              <span className="text-[10px] bg-amber-200 font-bold px-2 py-0.5 rounded-full text-amber-900">
+                1 Clic
               </span>
             </div>
-            <p className="text-xs text-amber-800 leading-relaxed">
-              Supabase is connected, but table <code className="font-mono bg-amber-100 px-1 py-0.5 rounded font-bold">public.inventory</code> has not been created yet. Entries are currently saved in local storage.
+            <p className="text-xs text-amber-800/90 leading-relaxed">
+              Supabase está conectado, pero falta ejecutar el script de la tabla <code className="font-mono bg-amber-200/50 px-1 py-0.5 rounded font-bold">public.inventory</code>. Las botellas se guardan temporalmente en tu dispositivo.
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="w-full py-2.5 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95"
+              className="w-full py-2.5 px-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm active:scale-98"
             >
-              <span>Open 1-Click SQL Setup & Instructions</span>
+              <span>Abrir script SQL y verificación en 1 clic</span>
               <ArrowRight size={14} />
             </button>
           </div>
         )}
 
-        {/* Offline Banner */}
+        {/* Offline Notice */}
         {supabaseStatus === 'offline' && (
-          <div className="mb-4 p-3.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-700 flex items-center justify-between gap-3 text-xs">
+          <div className="mb-4 p-3 bg-white border border-slate-200 rounded-xl text-slate-700 flex items-center justify-between gap-3 text-xs shadow-sm">
             <div className="flex items-center gap-2">
-              <HardDrive size={16} className="text-slate-500" />
-              <span>Working in <strong>Local Storage Mode</strong></span>
+              <HardDrive size={15} className="text-slate-500" />
+              <span>Modo almacenamiento local activo</span>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="text-xs font-bold text-indigo-600 hover:underline shrink-0"
+              className="text-xs font-bold text-amber-700 hover:underline shrink-0"
             >
-              Connect DB
+              Conectar Base de Datos
             </button>
           </div>
         )}
 
-        {/* Error notification if any */}
+        {/* Error notification */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center justify-between gap-2">
-            <p className="font-medium leading-relaxed">{error}</p>
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center justify-between gap-2 shadow-sm">
+            <p className="font-medium">{error}</p>
             <button 
               onClick={() => setError(null)} 
               className="text-red-500 hover:text-red-700 font-bold text-xs shrink-0"
             >
-              Dismiss
+              Cerrar
             </button>
           </div>
         )}
 
-        {/* Loading Spinner */}
+        {/* Dynamic Tab Body */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-28 text-slate-300">
             <div className="relative">
-              <Loader2 className="animate-spin text-indigo-500" size={44} />
-              <Cloud className="absolute inset-0 m-auto text-indigo-200" size={18} />
+              <Loader2 className="animate-spin text-amber-600" size={44} />
             </div>
-            <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Connecting to Database</p>
+            <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
+              Cargando Bóveda Brasão
+            </p>
           </div>
         ) : activeTab === 'count' ? (
           <InventoryForm 
@@ -455,7 +440,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Supabase Connection & Setup Modal */}
+      {/* Supabase Connection Modal */}
       <SupabaseModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -465,26 +450,45 @@ const App: React.FC = () => {
         entriesCount={entries.length}
       />
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-8 py-3 flex justify-around items-center shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-30">
-        <button 
-          onClick={() => setActiveTab('count')}
-          className={`flex flex-col items-center gap-1 transition-all active:scale-95 ${activeTab === 'count' ? 'text-indigo-600' : 'text-slate-400'}`}
-        >
-          <div className={`p-1.5 rounded-xl transition-colors ${activeTab === 'count' ? 'bg-indigo-50' : 'bg-transparent'}`}>
-            <ClipboardList size={22} strokeWidth={activeTab === 'count' ? 2.5 : 2} />
-          </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider">Entry</span>
-        </button>
-        <button 
-          onClick={() => setActiveTab('report')}
-          className={`flex flex-col items-center gap-1 transition-all active:scale-95 ${activeTab === 'report' ? 'text-indigo-600' : 'text-slate-400'}`}
-        >
-          <div className={`p-1.5 rounded-xl transition-colors ${activeTab === 'report' ? 'bg-indigo-50' : 'bg-transparent'}`}>
-            <BarChart3 size={22} strokeWidth={activeTab === 'report' ? 2.5 : 2} />
-          </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider">Reports</span>
-        </button>
+      {/* Navigation Dock (Mobile-First & iPad-Optimized) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-30 md:bottom-3 md:left-auto md:right-auto md:w-full md:flex md:justify-center pointer-events-none">
+        <div className="pointer-events-auto bg-white/95 md:bg-[#0b0e14]/95 backdrop-blur-xl border-t border-slate-200 md:border md:border-amber-500/30 md:rounded-2xl md:shadow-2xl px-6 py-2.5 sm:py-3 flex justify-around items-center w-full md:w-auto md:min-w-[340px] md:gap-8">
+          <button 
+            onClick={() => setActiveTab('count')}
+            className={`flex flex-col items-center gap-1 transition-all active:scale-95 px-3 py-1 rounded-xl ${
+              activeTab === 'count' 
+                ? 'text-amber-600 md:text-amber-400 font-bold' 
+                : 'text-slate-400 hover:text-slate-600 md:hover:text-slate-200'
+            }`}
+          >
+            <div className={`p-1.5 rounded-lg transition-colors ${
+              activeTab === 'count' 
+                ? 'bg-amber-100/70 md:bg-amber-500/20' 
+                : 'bg-transparent'
+            }`}>
+              <ClipboardList size={20} strokeWidth={activeTab === 'count' ? 2.5 : 2} />
+            </div>
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Conteo</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('report')}
+            className={`flex flex-col items-center gap-1 transition-all active:scale-95 px-3 py-1 rounded-xl ${
+              activeTab === 'report' 
+                ? 'text-amber-600 md:text-amber-400 font-bold' 
+                : 'text-slate-400 hover:text-slate-600 md:hover:text-slate-200'
+            }`}
+          >
+            <div className={`p-1.5 rounded-lg transition-colors ${
+              activeTab === 'report' 
+                ? 'bg-amber-100/70 md:bg-amber-500/20' 
+                : 'bg-transparent'
+            }`}>
+              <BarChart3 size={20} strokeWidth={activeTab === 'report' ? 2.5 : 2} />
+            </div>
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Reportes</span>
+          </button>
+        </div>
       </nav>
     </div>
   );
