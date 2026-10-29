@@ -10,6 +10,12 @@ interface Props {
   onOpenSettings: () => void;
 }
 
+/** Shorter wording for very narrow phones (< 380px), where the title leaves little room. */
+function shortStatusCopy(status: SyncStatus, pending: number, lastSynced: Date | null) {
+  if (status === 'offline' && pending) return `Offline · ${pending}`;
+  return statusCopy(status, pending, lastSynced);
+}
+
 function statusCopy(status: SyncStatus, pending: number, lastSynced: Date | null) {
   if (status === 'offline') return pending ? `Offline · ${pending} to upload` : 'Offline';
   if (status === 'missing_table') return 'Set up database';
@@ -30,16 +36,16 @@ export function Header({ status, syncing, pending, lastSynced, onOpenSettings }:
   return (
     <header className="night sticky top-0 z-40 pt-[env(safe-area-inset-top)] shadow-[0_6px_20px_-12px_rgba(28,27,25,0.6)]">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 md:px-8">
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <img src="/brasao-logo.png" alt="Brasão" className="h-9 w-auto shrink-0 brightness-0 invert md:h-10" />
           <span className="h-6 w-px bg-white/15" aria-hidden />
-          <span className="font-display truncate text-lg italic text-gold">Inventory</span>
+          <span className="shrink-0 text-[15px] font-bold tracking-[0.24em] text-gold uppercase sm:text-[17px]">Inventory</span>
         </div>
 
         <button
           onClick={onOpenSettings}
           className={cx(
-            'flex items-center gap-2 rounded-full border bg-white/5 py-1.5 pr-3 pl-2.5 text-[13px] font-bold transition hover:border-gold',
+            'flex min-w-0 items-center gap-2 rounded-full border bg-white/5 py-1.5 pr-3 pl-2.5 text-[13px] font-bold transition hover:border-gold',
             'focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:outline-none',
             tone,
           )}
@@ -54,7 +60,8 @@ export function Header({ status, syncing, pending, lastSynced, onOpenSettings }:
           ) : (
             <span className={cx('h-2 w-2 rounded-full', pending ? 'bg-gold-soft' : 'bg-gold')} />
           )}
-          <span className="max-w-[44vw] truncate">{statusCopy(status, pending, lastSynced)}</span>
+          <span className="truncate min-[380px]:hidden">{shortStatusCopy(status, pending, lastSynced)}</span>
+          <span className="hidden truncate min-[380px]:inline">{statusCopy(status, pending, lastSynced)}</span>
         </button>
       </div>
     </header>
